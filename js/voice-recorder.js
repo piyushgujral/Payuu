@@ -1,7 +1,8 @@
 /* ====================================================
    PAYUU LIVE - VOICE MESSAGE RECORDER
    Records microphone audio, uploads it to R2 through
-   /api/upload-voice, and exposes the result to checkout.
+   /api/upload-voice, and attaches the uploaded URL to
+   the Firebase pending-support submission.
    ==================================================== */
 (function () {
     'use strict';
@@ -278,6 +279,29 @@
         if (showStatus) setStatus('');
     }
 
+    function patchPendingSupport() {
+        if (!window.firebaseDB || typeof window.firebaseDB.addPendingSupport !== 'function') return;
+        if (window.firebaseDB.__payuuVoicePatched) return;
+
+        const original = window.firebaseDB.addPendingSupport.bind(window.firebaseDB);
+        window.firebaseDB.addPendingSupport = function (data) {
+            const voice = window.PayuuVoice.getState();
+            if (voice.voiceUrl) {
+                data = {
+                    ...data,
+                    voiceUrl: voice.voiceUrl,
+                    voiceMimeType: voice.voiceMimeType,
+                    voiceDuration: voice.voiceDuration,
+                    voiceStatus: voice.voiceStatus,
+                    voiceEnabled: true,
+                    messageSource: 'voice'
+                };
+            }
+            return original(data);
+        };
+        window.firebaseDB.__payuuVoicePatched = true;
+    }
+
     function attach() {
         const recordBtn = $('voice-record-btn');
         const stopBtn = $('voice-stop-btn');
@@ -287,6 +311,8 @@
         const form = $('tip-form');
 
         if (!recordBtn || !form) return;
+
+        patchPendingSupport();
 
         recordBtn.addEventListener('click', () => {
             if (state.recorder && state.recorder.state === 'recording') return;
@@ -336,17 +362,6 @@
                 return;
             }
         }, true);
-
-        // Add the uploaded voice URL to the submission created by script.js.
-        form.addEventListener('submit', () => {
-            if (!state.voiceUrl || !window.STATE || !window.STATE.activeSubmission) return;
-            window.STATE.activeSubmission.voiceUrl = state.voiceUrl;
-            window.STATE.activeSubmission.voiceMimeType = state.mimeType;
-            window.STATE.activeSubmission.voiceDuration = state.duration;
-            window.STATE.activeSubmission.voiceStatus = 'uploaded';
-            window.STATE.activeSubmission.voiceEnabled = true;
-            window.STATE.activeSubmission.messageSource = 'voice';
-        });
     }
 
     if (document.readyState === 'loading') {
