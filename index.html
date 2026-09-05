@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="page-title">Payuu Live | Official Creator Support Hub</title>
+
+    <!-- Browser Favicon -->
+    <link rel="icon" type="image/png" id="favicon-link" href="assets/images/favicon.png">
+
+    <!-- Google Fonts: Orbitron & Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Gaming Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Canvas Confetti Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- QR Code Generator Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- MOUSE SPOTLIGHT GLOW -->
+    <div id="cursor-glow"></div>
+
+    <!-- BACKGROUND NEBULA & DUST PARTICLES -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- WELCOME OVERLAY SCREEN -->
+    <div id="welcome-screen">
+        <div class="welcome-logo-container">
+            <div class="logo-ring-aura"></div>
+            <img src="assets/images/logo.png" alt="Payuu Live Logo" class="welcome-logo-img dynamic-logo">
+        </div>
+        <div class="welcome-title" id="dyn-welcome-title">PAYUU LIVE</div>
+        <div class="welcome-subtitle" id="dyn-welcome-subtitle">CREATOR SUPPORT DASHBOARD</div>
+        <button class="btn-enter-dashboard" id="btn-enter-dashboard">
+            ENTER DASHBOARD <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- STICKY GLASS NAVBAR -->
+    <header class="navbar-sticky">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/images/logo.png" alt="Payuu Live Logo" class="nav-logo-img dynamic-logo">
+                <span class="nav-brand-name" id="dyn-nav-brand">PAYUU <span>LIVE</span></span>
+            </div>
+
+            <nav class="nav-social-compact" id="header-social-container">
+                <a href="https://kick.com/payuu-25" id="nav-link-kick" target="_blank" rel="noopener noreferrer" class="nav-social-btn kick-nav-highlight" title="Kick Live Stream">
+                    <svg class="kick-svg-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M2 2h20v20H2V2zm4 3.5v13h3.2v-5.2l3.8 5.2h4.2l-4.9-6.3L17 5.5h-4l-3.8 4.9V5.5H6z"/></svg>
+                    <span>KICK</span>
+                    <span class="nav-live-badge"><div class="live-dot"></div> LIVE NOW</span>
+                </a>
+
+                <a href="https://www.instagram.com/payuulive" id="nav-link-insta" target="_blank" rel="noopener noreferrer" class="nav-social-icon insta" title="Instagram">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+
+                <a href="https://www.youtube.com/@payuulive" id="nav-link-yt" target="_blank" rel="noopener noreferrer" class="nav-social-icon yt" title="YouTube">
+                    <i class="fa-brands fa-youtube"></i>
+                </a>
+
+                <a href="https://discord.gg/nSZCe9mS62" id="nav-link-discord" target="_blank" rel="noopener noreferrer" class="nav-social-icon discord" title="Discord">
+                    <i class="fa-brands fa-discord"></i>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="container">
+
+        <!-- HERO SECTION -->
+        <section class="hero-section" id="hero">
+            <div class="hero-logo-wrapper">
+                <div class="hero-ring-glow"></div>
+                <img src="assets/images/logo.png" alt="Payuu Live Logo" class="hero-logo-img dynamic-logo">
+            </div>
+            <h1 class="hero-title-main" id="dyn-hero-title">PAYUU LIVE</h1>
+            <div class="hero-subtitle" id="dyn-hero-subtitle">Fuel the Stream ❤️</div>
+            <p class="hero-description" id="dyn-hero-tagline">
+                Every contribution helps upgrade the stream, improve the gaming setup, and create better content for the community. Thank you for being part of the journey! ❤️🎮
+            </p>
+        </section>
+
+        <!-- DASHBOARD 3-COLUMN GRID -->
+        <div class="dashboard-grid">
+
+            <div class="column-left">
+                <div class="glass-panel tilt-card">
+                    <div class="panel-header-title">
+                        <i class="fa-solid fa-trophy"></i> <span id="dyn-goal-title">Monthly Goal</span>
+                    </div>
+                    
+                    <div class="goal-numbers">
+                        <span id="raised-text">₹0</span>
+                        <span id="target-text">Target ₹10,000</span>
+                    </div>
+
+                    <div class="goal-bar-outer">
+                        <div class="goal-bar-inner" id="goal-bar"></div>
+                    </div>
+
+                    <div class="goal-metrics-split">
+                        <span id="percentage-text">0% Completed</span>
+                        <span id="remaining-text">₹10,000 Remaining</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel tilt-card" id="stats-section">
+                    <div class="panel-header-title">
+                        <i class="fa-solid fa-chart-line"></i> Stream Stats
+                    </div>
+
+                    <div class="stats-mini-grid">
+                        <div class="stat-box">
+                            <i class="fa-solid fa-heart stat-icon"></i>
+                            <div class="stat-value" id="stat-total-supporters">0</div>
+                            <div class="stat-label">Total Supporters</div>
+                        </div>
+
+                        <div class="stat-box">
+                            <i class="fa-solid fa-coins stat-icon"></i>
+                            <div class="stat-value" id="stat-total-raised">₹0</div>
+                            <div class="stat-label">Total Raised</div>
+                        </div>
+
+                        <div class="stat-box">
+                            <i class="fa-solid fa-fire stat-icon"></i>
+                            <div class="stat-value" id="stat-highest-donation">₹0</div>
+                            <div class="stat-label">Highest Tip</div>
+                        </div>
+
+                        <div class="stat-box">
+                            <i class="fa-solid fa-bolt stat-icon"></i>
+                            <div class="stat-value">2026</div>
+                            <div class="stat-label">Live Since</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column-center" id="support-section">
+                <div class="glass-panel tilt-card">
+                    <div class="panel-header-title">
+                        <i class="fa-solid fa-heart"></i> CHOOSE YOUR SUPPORT
+                    </div>
+
+                    <form id="tip-form">
+                        <div class="donation-tiers-grid" id="tier-cards-container">
+                            <div class="donation-card" data-value="40">
+                                <div class="tier-badge-icon">🎮</div>
+                                <div class="tier-amount-display"><span class="curr-sym">₹</span>40</div>
+                                <div class="tier-name-label">Rookie</div>
+                            </div>
+
+                            <div class="donation-card active" data-value="50">
+                                <div class="tier-badge-icon">⭐</div>
+                                <div class="tier-amount-display"><span class="curr-sym">₹</span>50</div>
+                                <div class="tier-name-label">Gamer</div>
+                            </div>
+
+                            <div class="donation-card" data-value="100">
+                                <div class="tier-badge-icon">🔥</div>
+                                <div class="tier-amount-display"><span class="curr-sym">₹</span>100</div>
+                                <div class="tier-name-label">Pro</div>
+                            </div>
+
+                            <div class="donation-card" data-value="250">
+                                <div class="tier-badge-icon">💎</div>
+                                <div class="tier-amount-display"><span class="curr-sym">₹</span>250</div>
+                                <div class="tier-name-label">Elite</div>
+                            </div>
+
+                            <div class="donation-card" data-value="500">
+                                <div class="tier-badge-icon">👑</div>
+                                <div class="tier-amount-display"><span class="curr-sym">₹</span>500</div>
+                                <div class="tier-name-label">Champion</div>
+                            </div>
+
+                            <div class="donation-card" data-value="1000">
+                                <div class="tier-badge-icon">🏆</div>
+                                <div class="tier-amount-display"><span class="curr-sym">₹</span>1000</div>
+                                <div class="tier-name-label">Legend</div>
+                            </div>
+                        </div>
+
+                        <div class="input-field-group">
+                            <label class="floating-label" for="custom-amount">Custom Amount (<span class="curr-sym">₹</span>)</label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-indian-rupee-sign input-prefix-icon"></i>
+                                <input type="number" id="custom-amount" class="form-input" placeholder="Enter custom amount">
+                            </div>
+                            <div id="amount-warning" class="validation-warning">Minimum contribution amount is <span class="curr-sym">₹</span><span id="warn-min-amt">40</span>.</div>
+                        </div>
+
+                        <div class="input-field-group">
+                            <label class="floating-label" for="supporter-name">Your Gamer Name</label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-user-ninja input-prefix-icon"></i>
+                                <input type="text" id="supporter-name" class="form-input" placeholder="e.g. ShadowSlayer" required>
+                            </div>
+                        </div>
+
+                       <div class="input-field-group">
+    <label class="floating-label" for="supporter-message">
+        Message for Streamer
+    </label>
+
+    <div class="input-with-icon">
+        <i class="fa-solid fa-comment-dots input-prefix-icon"></i>
+        <textarea
+            id="supporter-message"
+            class="form-input text-area"
+            maxlength="150"
+            placeholder="Write a message to read on stream..."
+        ></textarea>
+    </div>
+
+    <div class="char-counter">
+        <span id="char-count">0</span> / 150
+    </div>
+
+    <!-- ORIGINAL VOICE MESSAGE -->
+    <div class="voice-option">
+        <button
+            type="button"
+            id="voice-record-btn"
+            class="voice-record-btn"
+        >
+            🎙️ SPEAK MESSAGE
+        </button>
+
+        <div id="voice-recorder-panel" style="display:none; margin-top:12px;">
+
+            <div id="voice-recording-status">
+                <span id="voice-recording-dot">🔴</span>
+                <span id="voice-recording-time">00:00</span>
+            </div>
+
+            <div class="voice-actions">
+                <button
+                    type="button"
+                    id="voice-stop-btn"
+                    style="display:none;"
+                >
+                    ⏹ Stop
+                </button>
+
+                <button
+                    type="button"
+                    id="voice-play-btn"
+                    style="display:none;"
+                >
+                    ▶ Play
+                </button>
+
+                <button
+                    type="button"
+                    id="voice-rerecord-btn"
+                    style="display:none;"
+                >
+                    🔄 Re-record
+                </button>
+
+                <button
+                    type="button"
+                    id="voice-delete-btn"
+                    style="display:none;"
+                >
+                    🗑 Delete
+                </button>
+            </div>
+
+            <audio
+                id="voice-preview"
+                controls
+                style="display:none; width:100%; margin-top:10px;"
+            ></audio>
+
+            <div
+                id="voice-upload-status"
+                style="font-size:0.75rem; margin-top:8px;"
+            ></div>
+        </div>
+    </div>
+</div>
+                        <button type="submit" class="btn-support-mega" id="support-submit-btn">
+                            ⚡ <span id="dyn-btn-text">SUPPORT NOW</span> ⚡
+                        </button>
+
+                        <div class="secure-checkout-tag">
+                            <i class="fa-solid fa-lock"></i> Direct & Secure Payment via UPI Intent
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="column-right">
+                <div class="glass-panel tilt-card kick-live-panel">
+                    <div class="kick-live-header">
+                        <span class="kick-status-tag">🟢 LIVE ON KICK</span>
+                    </div>
+                    <div class="kick-live-body">
+                        <div class="kick-stream-title">Watch Live Stream</div>
+                        <div class="kick-channel-url" id="dyn-sidebar-kick-url">kick.com/payuu-25</div>
+                        <a href="https://kick.com/payuu-25" id="btn-kick-sidebar" target="_blank" rel="noopener noreferrer" class="btn-watch-kick">
+                            <svg class="kick-btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M2 2h20v20H2V2zm4 3.5v13h3.2v-5.2l3.8 5.2h4.2l-4.9-6.3L17 5.5h-4l-3.8 4.9V5.5H6z"/></svg>
+                            Watch Live on Kick
+                        </a>
+                    </div>
+                </div>
+
+                <div class="glass-panel tilt-card top-supporter-panel">
+                    <div class="panel-header-title">
+                        <i class="fa-solid fa-crown" style="color: var(--gold-primary);"></i> Top Supporter
+                    </div>
+
+                    <div class="top-supporter-content">
+                        <div class="top-avatar-frame">
+                            <div class="gold-ring-animated"></div>
+                            <div class="top-avatar-placeholder" id="top-avatar-letter">?</div>
+                        </div>
+                        <div class="legend-badge" id="top-supporter-badge">LEGEND</div>
+                        <div class="top-supporter-name" id="top-name">No Top Supporter</div>
+                        <div class="top-supporter-amount" id="top-amount">₹0</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel tilt-card">
+                    <div class="panel-header-title">
+                        <i class="fa-solid fa-comments" style="color: var(--pink-neon);"></i> Recent Supporters
+                    </div>
+
+                    <div class="supporters-feed" id="supporters-feed"></div>
+                </div>
+
+                <div class="glass-panel tilt-card qr-card-center">
+                    <div class="panel-header-title">
+                        <i class="fa-solid fa-qrcode"></i> Scan To Support
+                    </div>
+
+                    <div class="qr-code-wrapper" id="qr-container"></div>
+
+                    <div class="upi-id-box">
+                        <span id="upi-id-text">payalgupta545757-1@okicici</span>
+                        <i class="fa-regular fa-copy copy-icon" id="copy-upi-btn" title="Copy UPI ID"></i>
+                    </div>
+
+                    <div class="payment-apps-row">
+                        <span>GPay</span> • <span>PhonePe</span> | <span>Paytm</span> • <span>BHIM</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <section class="connect-section">
+            <div class="section-title-wrap">
+                <h2 class="section-heading">CONNECT WITH ME</h2>
+                <p class="section-subtext">Follow for Live Streams & Gaming Content</p>
+            </div>
+
+            <div class="social-cards-grid">
+                <a href="https://kick.com/payuu-25" id="social-card-kick" target="_blank" rel="noopener noreferrer" class="social-glass-card kick">
+                    <div class="social-icon-wrapper">
+                        <svg class="kick-card-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M2 2h20v20H2V2zm4 3.5v13h3.2v-5.2l3.8 5.2h4.2l-4.9-6.3L17 5.5h-4l-3.8 4.9V5.5H6z"/></svg>
+                    </div>
+                    <div class="social-card-info">
+                        <div class="social-platform-name">Kick <span class="primary-tag">Primary</span></div>
+                        <div class="social-handle-text" id="social-handle-kick">payuu-25</div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square card-link-arrow"></i>
+                </a>
+
+                <a href="https://www.instagram.com/payuulive" id="social-card-insta" target="_blank" rel="noopener noreferrer" class="social-glass-card instagram">
+                    <div class="social-icon-wrapper">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                    <div class="social-card-info">
+                        <div class="social-platform-name">Instagram</div>
+                        <div class="social-handle-text" id="social-handle-insta">@payuulive</div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square card-link-arrow"></i>
+                </a>
+
+                <a href="https://www.youtube.com/@payuulive" id="social-card-yt" target="_blank" rel="noopener noreferrer" class="social-glass-card youtube">
+                    <div class="social-icon-wrapper">
+                        <i class="fa-brands fa-youtube"></i>
+                    </div>
+                    <div class="social-card-info">
+                        <div class="social-platform-name">YouTube</div>
+                        <div class="social-handle-text" id="social-handle-yt">@payuulive</div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square card-link-arrow"></i>
+                </a>
+
+                <a href="https://discord.gg/nSZCe9mS62" id="social-card-discord" target="_blank" rel="noopener noreferrer" class="social-glass-card discord">
+                    <div class="social-icon-wrapper">
+                        <i class="fa-brands fa-discord"></i>
+                    </div>
+                    <div class="social-card-info">
+                        <div class="social-platform-name">Discord</div>
+                        <div class="social-handle-text">Join Community</div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square card-link-arrow"></i>
+                </a><!-- MAIN INSTAGRAM -->
+<a href="https://www.instagram.com/payal_25004?igsi=MWs4aWpnMXNuM3hweA=="
+   id="social-card-main-instagram"
+   target="_blank"
+   rel="noopener noreferrer"
+   class="social-glass-card instagram">
+
+    <div class="social-icon-wrapper">
+        <i class="fa-brands fa-instagram"></i>
+    </div>
+
+    <div class="social-card-info">
+        <div class="social-platform-name">Instagram</div>
+        <div class="social-handle-text">@payal_25004</div>
+    </div>
+
+    <i class="fa-solid fa-arrow-up-right-from-square card-link-arrow"></i>
+</a>
+
+
+<!-- PARALLEL -->
+<a href="https://link.parallelchat.app/?redirect=https://parallel.go.link/cZCbM"
+   id="social-card-parallel"
+   target="_blank"
+   rel="noopener noreferrer"
+   class="social-glass-card">
+
+    <div class="social-icon-wrapper">
+        <span style="font-size: 1.4rem;">🔗</span>
+    </div>
+
+    <div class="social-card-info">
+        <div class="social-platform-name">Parallel</div>
+        <div class="social-handle-text">Connect on Parallel</div>
+    </div>
+
+    <i class="fa-solid fa-arrow-up-right-from-square card-link-arrow"></i>
+</a>
+              
+            </div>
+        </section>
+
+        <!-- STREAMER ADMIN PANEL -->
+        <div class="admin-panel" id="admin-panel">
+            <div class="admin-panel-top-bar" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gold-primary); padding-bottom: 12px; margin-bottom: 15px;">
+                <div>
+                    <div class="panel-header-title" style="margin-bottom: 0;">
+                        <i class="fa-solid fa-user-shield"></i> Streamer Control Dashboard
+                        <span id="email-status-warning" style="display: none; background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid #EF4444; font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; margin-left: 10px;">
+                            ⚠ Email Notification Failed
+                        </span>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-sub);" id="admin-user-badge">
+                        Logged in as: <strong id="admin-email-display" style="color: var(--gold-primary);">---</strong> (<span id="admin-role-display" style="text-transform: uppercase;">---</span>)
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn-admin-act details" id="btn-open-add-modal" style="background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid #10B981;">
+                        <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                    <button class="btn-admin-act reject owner-only" id="btn-reset-stats">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Stats
+                    </button>
+                    <button class="btn-admin-act cancel" id="btn-admin-logout" style="background: rgba(255,0,0,0.2); color: #FF4D4D; border: 1px solid #FF4D4D;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB NAVIGATION BAR -->
+            <div class="admin-tabs-nav" style="display: flex; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; flex-wrap: wrap;">
+                <button class="admin-tab-btn active" id="tab-btn-queue" onclick="switchAdminTab('queue')"><i class="fa-solid fa-clock-rotate-left"></i> Requests</button>
+                <button class="admin-tab-btn" id="tab-btn-approved" onclick="switchAdminTab('approved')"><i class="fa-solid fa-circle-check"></i> Approved</button>
+                <button class="admin-tab-btn mod-owner-only" id="tab-btn-logs" onclick="switchAdminTab('logs')"><i class="fa-solid fa-receipt"></i> Email Logs</button>
+                <button class="admin-tab-btn mod-owner-only" id="tab-btn-audit" onclick="switchAdminTab('audit')"><i class="fa-solid fa-list-check"></i> Audit Logs</button>
+                <button class="admin-tab-btn owner-only" id="tab-btn-settings" onclick="switchAdminTab('settings')"><i class="fa-solid fa-gear"></i> ⚙️ Settings</button>
+            </div>
+
+            <div class="admin-tab-content active" id="tab-content-queue">
+                <div id="pending-queue-list"></div>
+            </div>
+
+            <!-- TAB 2: APPROVED LIST (MODULE 2 - EXPANDED) -->
+            <div class="admin-tab-content" id="tab-content-approved" style="display: none;">
+                
+                <!-- FEATURE 10: STATISTICS SUMMARY BAR -->
+                <div class="stats-mini-grid" style="margin-bottom: 15px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));">
+                    <div class="stat-box">
+                        <div class="stat-value" id="app-stat-count" style="font-size: 1.1rem; color: var(--gold-primary);">0</div>
+                        <div class="stat-label">Count</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="app-stat-total" style="font-size: 1.1rem; color: #10B981;">₹0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="app-stat-avg" style="font-size: 1.1rem; color: var(--cyan-neon);">₹0</div>
+                        <div class="stat-label">Average</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="app-stat-highest" style="font-size: 1.1rem; color: var(--pink-neon);">₹0</div>
+                        <div class="stat-label">Highest</div>
+                    </div>
+                </div>
+
+                <!-- FEATURE 6, 7, 8, 9: CONTROLS & EXPORT TOOLBAR -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; margin-bottom: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="approved-search-input" class="form-input" placeholder="🔍 Search Name, Msg, Amount..." style="padding: 8px 12px; font-size: 0.8rem;">
+                        
+                        <select id="approved-filter-date" class="form-input" style="padding: 8px; font-size: 0.8rem;">
+                            <option value="all">Filter: All Time</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="week">Last 7 Days</option>
+                            <option value="month">This Month</option>
+                        </select>
+
+                        <select id="approved-sort-by" class="form-input" style="padding: 8px; font-size: 0.8rem;">
+                            <option value="newest">Sort: Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="highest">Highest Amount</option>
+                            <option value="lowest">Lowest Amount</option>
+                            <option value="alpha">Alphabetical</option>
+                        </select>
+                    </div>
+
+                    <!-- EXPORT ACTION BUTTONS -->
+                    <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+                        <button type="button" class="btn-admin-act details" id="btn-export-csv" style="font-size: 0.72rem; padding: 6px 12px;">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
+                        <button type="button" class="btn-admin-act details" id="btn-export-excel" style="font-size: 0.72rem; padding: 6px 12px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; color: #10B981;">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel
+                        </button>
+                        <button type="button" class="btn-admin-act details" id="btn-export-pdf" style="font-size: 0.72rem; padding: 6px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid #EF4444; color: #EF4444;">
+                            <i class="fa-solid fa-file-pdf"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div id="approved-admin-list"></div>
+            </div>
+
+            <!-- TAB: NOTIFICATION LOGS -->
+            <div class="admin-tab-content mod-owner-only" id="tab-content-logs" style="display: none;">
+                <div class="settings-group-title"><i class="fa-solid fa-receipt"></i> Notification Logs</div>
+                <div id="notification-logs-list" style="max-height: 350px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- TAB 11: AUDIT LOGS -->
+            <div class="admin-tab-content mod-owner-only" id="tab-content-audit" style="display: none;">
+                <div class="settings-group-title"><i class="fa-solid fa-list-check"></i> Audit Logs</div>
+                <div id="audit-logs-list" style="max-height: 350px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- TAB 3: ⚙️ SETTINGS PANEL -->
+            <div class="admin-tab-content owner-only" id="tab-content-settings" style="display: none;">
+                <form id="admin-settings-form">
+
+                    <!-- MODULE 1: EMAIL NOTIFICATION SETTINGS -->
+                    <div class="settings-group-title"><i class="fa-solid fa-envelope"></i> EMAIL NOTIFICATIONS</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">Enable Email Notifications</label>
+                            <select id="set-email-enabled" class="form-input">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">EmailJS Service ID</label>
+                            <input type="text" id="set-emailjs-service" class="form-input" placeholder="service_xxxxx">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">EmailJS Template ID</label>
+                            <input type="text" id="set-emailjs-template" class="form-input" placeholder="template_xxxxx">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">EmailJS Public Key</label>
+                            <input type="text" id="set-emailjs-publickey" class="form-input" placeholder="user_xxxxx / public_key">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Sender Name</label>
+                            <input type="text" id="set-email-sender-name" class="form-input" placeholder="Payuu Live Dashboard">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Reply To Email</label>
+                            <input type="email" id="set-email-reply-to" class="form-input" placeholder="support@payuulive.com">
+                        </div>
+                        <div class="input-field-group" style="grid-column: span 2;">
+                            <label class="floating-label">Email Subject</label>
+                            <input type="text" id="set-email-subject" class="form-input" placeholder="🔔 New Support Request - Payuu Live">
+                        </div>
+                        <div class="input-field-group" style="grid-column: span 2; display: flex; align-items: flex-end;">
+                            <button type="button" class="btn-admin-act details" id="btn-test-email" style="width: 100%; padding: 12px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; color: #10B981;">
+                                <i class="fa-solid fa-paper-plane"></i> Send Test Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI VOICE CONTROL SETTINGS -->
+                    <div class="settings-group-title"><i class="fa-solid fa-volume-high"></i> Module 1: AI Voice Super Chat</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">Enable AI Voice Readout</label>
+                            <select id="set-voice-enabled" class="form-input">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Voice Language</label>
+                            <select id="set-voice-language" class="form-input">
+                                <option value="en-IN">English (India)</option>
+                                <option value="hi-IN">Hindi (India)</option>
+                                <option value="en-US">English (US)</option>
+                            </select>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Voice Pitch (Gender Tone)</label>
+                            <select id="set-voice-gender" class="form-input">
+                                <option value="female">Female Tone (Higher Pitch)</option>
+                                <option value="male">Male Tone (Lower Pitch)</option>
+                            </select>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Voice Volume (0.0 to 1.0)</label>
+                            <input type="number" id="set-voice-volume" class="form-input" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Speech Speed / Rate</label>
+                            <input type="number" id="set-voice-rate" class="form-input" min="0.5" max="2" step="0.1">
+                        </div>
+                        <div class="input-field-group" style="display: flex; align-items: flex-end;">
+                            <button type="button" class="btn-admin-act details" id="btn-test-voice" style="width: 100%; padding: 12px; background: rgba(0, 240, 255, 0.2); border: 1px solid var(--cyan-neon); color: var(--cyan-neon);">
+                                <i class="fa-solid fa-bullhorn"></i> Test AI Voice
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- BRANDING -->
+                    <div class="settings-group-title"><i class="fa-solid fa-paintbrush"></i> Branding</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">Upload Logo</label>
+                            <input type="file" id="set-logo-file" class="form-input" accept="image/*">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Upload Favicon</label>
+                            <input type="file" id="set-favicon-file" class="form-input" accept="image/*">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Website Name</label>
+                            <input type="text" id="set-website-name" class="form-input" required>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Streamer Name</label>
+                            <input type="text" id="set-streamer-name" class="form-input" required>
+                        </div>
+                        <div class="input-field-group" style="grid-column: span 2;">
+                            <label class="floating-label">Tagline</label>
+                            <input type="text" id="set-tagline" class="form-input">
+                        </div>
+                    </div>
+
+                    <!-- PAYMENT -->
+                    <div class="settings-group-title"><i class="fa-solid fa-credit-card"></i> Payment</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">UPI ID</label>
+                            <input type="text" id="set-upi-id" class="form-input" value="payalgupta545757-1@okicici" required>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Custom UPI QR Code Image</label>
+                            <input type="file" id="set-qr-file" class="form-input" accept="image/*">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Suggested Amounts (Comma Separated)</label>
+                            <input type="text" id="set-suggested-amounts" class="form-input" placeholder="40, 50, 100, 250, 500, 1000">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Minimum Support Amount</label>
+                            <input type="number" id="set-min-amount" class="form-input" min="1">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Maximum Support Amount</label>
+                            <input type="number" id="set-max-amount" class="form-input">
+                        </div>
+                    </div>
+
+                    <!-- STREAM SETTINGS -->
+                    <div class="settings-group-title"><i class="fa-solid fa-sliders"></i> Stream Settings</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">Goal Target (₹)</label>
+                            <input type="number" id="set-goal-target" class="form-input" min="100">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Goal Title</label>
+                            <input type="text" id="set-goal-title" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Currency Symbol</label>
+                            <input type="text" id="set-currency-symbol" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Default Thank You Message</label>
+                            <input type="text" id="set-thankyou-msg" class="form-input">
+                        </div>
+                    </div>
+
+                    <!-- SOCIAL LINKS -->
+                    <div class="settings-group-title"><i class="fa-solid fa-share-nodes"></i> Social Links</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">Kick URL</label>
+                            <input type="url" id="set-social-kick" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Instagram URL</label>
+                            <input type="url" id="set-social-insta" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">YouTube URL</label>
+                            <input type="url" id="set-social-yt" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Discord URL</label>
+                            <input type="url" id="set-social-discord" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Facebook URL</label>
+                            <input type="url" id="set-social-fb" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">X (Twitter) URL</label>
+                            <input type="url" id="set-social-twitter" class="form-input">
+                        </div>
+                        <div class="input-field-group" style="grid-column: span 2;">
+                            <label class="floating-label">Personal Website URL</label>
+                            <input type="url" id="set-social-website" class="form-input">
+                        </div>
+                    </div>
+
+                    <!-- OVERLAY SETTINGS -->
+                    <div class="settings-group-title"><i class="fa-solid fa-desktop"></i> Overlay Settings</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">Alert Duration (Seconds)</label>
+                            <input type="number" id="set-overlay-duration" class="form-input" min="2" max="30">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Alert Volume (0.0 to 1.0)</label>
+                            <input type="number" id="set-overlay-volume" class="form-input" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Enable Confetti</label>
+                            <select id="set-overlay-confetti" class="form-input">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Enable Sound</label>
+                            <select id="set-overlay-sound" class="form-input">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Alert Animation</label>
+                            <select id="set-overlay-animation" class="form-input">
+                                <option value="bounce">Slide & Bounce</option>
+                                <option value="fade">Fade In/Out</option>
+                                <option value="zoom">Zoom In</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- HOME PAGE TEXTS -->
+                    <div class="settings-group-title"><i class="fa-solid fa-house"></i> Home Page Texts</div>
+                    <div class="settings-grid-split">
+                        <div class="input-field-group">
+                            <label class="floating-label">Welcome Title</label>
+                            <input type="text" id="set-welcome-title" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Welcome Subtitle</label>
+                            <input type="text" id="set-welcome-subtitle" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Support Button Text</label>
+                            <input type="text" id="set-btn-text" class="form-input">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Footer Text</label>
+                            <input type="text" id="set-footer-text" class="form-input">
+                        </div>
+                    </div>
+
+                    <!-- MANAGE ADMINISTRATORS (OWNER ONLY) -->
+                    <div class="settings-group-title"><i class="fa-solid fa-users-gear"></i> Manage Administrators</div>
+                    <div class="settings-grid-split" style="margin-bottom: 15px;">
+                        <div class="input-field-group">
+                            <label class="floating-label">Admin Email</label>
+                            <input type="email" id="new-admin-email" class="form-input" placeholder="admin@gmail.com">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="floating-label">Role</label>
+                            <select id="new-admin-role" class="form-input">
+                                <option value="moderator">Moderator</option>
+                                <option value="owner">Owner</option>
+                                <option value="viewer">Viewer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-admin-act details" id="btn-add-admin" style="margin-bottom: 15px;">
+                        <i class="fa-solid fa-user-plus"></i> Add / Update Admin
+                    </button>
+
+                    <div id="admin-users-list" style="margin-bottom: 25px;"></div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div style="display: flex; gap: 15px; margin-top: 25px;">
+                        <button type="submit" class="btn-modal-action confirm" style="flex: 2;"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+                        <button type="button" class="btn-modal-action cancel" id="btn-restore-defaults" style="flex: 1;"><i class="fa-solid fa-trash-arrow-up"></i> Restore Defaults</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- GOOGLE LOGIN MODAL -->
+    <div class="modal-overlay" id="google-auth-modal">
+        <div class="modal-box" style="text-align: center;">
+            <i class="fa-solid fa-shield-halved modal-header-icon" style="color: var(--gold-primary);"></i>
+            <h2 class="modal-title">Admin Authentication</h2>
+            <p class="modal-desc">Please sign in with your authorized Google Account to access the Streamer Control Panel.</p>
+            
+            <button class="btn-modal-action confirm" id="btn-google-login" style="margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fa-brands fa-google"></i> Continue with Google
+            </button>
+            <button class="btn-modal-action cancel" id="btn-close-login" style="margin-top: 10px;">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- PHASE 1 MODAL 1: PAYMENT CONFIRMATION PROMPT -->
+    <div class="modal-overlay" id="confirm-payment-modal">
+        <div class="modal-box">
+            <i class="fa-solid fa-circle-question modal-header-icon" style="color: var(--cyan-neon);"></i>
+            <h2 class="modal-title">Did you complete the payment?</h2>
+            <p class="modal-desc">Please confirm if you completed the transaction in your UPI app.</p>
+            
+            <div class="modal-action-buttons">
+                <button class="btn-modal-action confirm" id="btn-paid-yes">
+                    YES I HAVE PAID
+                </button>
+                <button class="btn-modal-action cancel" id="btn-paid-cancel">
+                    CANCEL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 1 MODAL 2: AWAITING VERIFICATION STATUS -->
+    <div class="modal-overlay" id="thankyou-modal">
+        <div class="modal-box">
+            <img src="assets/images/logo.png" alt="Payuu Live" class="modal-logo-img dynamic-logo">
+            <h2 class="modal-title">Thank You ❤️</h2>
+            <p class="modal-desc" id="dyn-thankyou-desc">Your payment request has been submitted.<br>Please wait while Payuu verifies your payment.</p>
+
+            <div class="modal-status-badge awaiting-verif">
+                <span>🟡 Status:</span> Awaiting Verification
+            </div>
+
+            <button class="btn-modal-close" id="close-modal-btn">Got It!</button>
+        </div>
+    </div>
+
+    <!-- ADMIN: VIEW DETAILS MODAL -->
+    <div class="modal-overlay" id="details-modal">
+        <div class="modal-box" style="text-align: left;">
+            <div class="panel-header-title" style="border-bottom: 1px solid var(--gold-primary); padding-bottom: 10px; margin-bottom: 15px;">
+                <i class="fa-solid fa-circle-info"></i> Support Request Details
+            </div>
+            
+            <div id="details-content-body" class="details-body"></div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-modal-close" id="close-details-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE 1: EDIT APPROVED SUPER CHAT MODAL -->
+    <div class="modal-overlay" id="edit-approved-modal">
+        <div class="modal-box" style="text-align: left;">
+            <div class="panel-header-title" style="border-bottom: 1px solid var(--gold-primary); padding-bottom: 10px; margin-bottom: 15px;">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Approved Super Chat
+            </div>
+
+            <form id="edit-approved-form">
+                <input type="hidden" id="edit-record-key">
+
+                <div class="input-field-group">
+                    <label class="floating-label" for="edit-supporter-name">Supporter Name *</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-user-ninja input-prefix-icon"></i>
+                        <input type="text" id="edit-supporter-name" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="input-field-group">
+                    <label class="floating-label" for="edit-supporter-amount">Amount (<span class="curr-sym">₹</span>) *</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-indian-rupee-sign input-prefix-icon"></i>
+                        <input type="number" id="edit-supporter-amount" class="form-input" min="1" required>
+                    </div>
+                </div>
+
+                <div class="input-field-group">
+                    <label class="floating-label" for="edit-supporter-message">Message</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-comment-dots input-prefix-icon"></i>
+                        <textarea id="edit-supporter-message" class="form-input text-area" maxlength="150"></textarea>
+                    </div>
+                </div>
+
+                <div class="input-field-group">
+                    <label class="floating-label" for="edit-supporter-date">Date</label>
+                    <div class="input-with-icon">
+                        <i class="fa-regular fa-calendar input-prefix-icon"></i>
+                        <input type="text" id="edit-supporter-date" class="form-input" placeholder="e.g. 02/08/2026">
+                    </div>
+                </div>
+
+                <div class="input-field-group">
+                    <label class="floating-label" for="edit-supporter-time">Time</label>
+                    <div class="input-with-icon">
+                        <i class="fa-regular fa-clock input-prefix-icon"></i>
+                        <input type="text" id="edit-supporter-time" class="form-input" placeholder="e.g. 08:30 PM">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn-modal-action confirm" style="flex: 1;">Save Changes</button>
+                    <button type="button" class="btn-modal-action cancel" id="cancel-edit-btn" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN: ADD SUPER CHAT MODAL -->
+    <div class="modal-overlay" id="add-superchat-modal">
+        <div class="modal-box" style="text-align: left;">
+            <div class="panel-header-title" style="border-bottom: 1px solid var(--gold-primary); padding-bottom: 10px; margin-bottom: 15px;">
+                <i class="fa-solid fa-plus-circle"></i> Add Super Chat
+            </div>
+
+            <form id="add-superchat-form">
+                <div class="input-field-group">
+                    <label class="floating-label" for="add-supporter-name">Supporter Name *</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-user-ninja input-prefix-icon"></i>
+                        <input type="text" id="add-supporter-name" class="form-input" placeholder="Enter supporter name" required>
+                    </div>
+                </div>
+
+                <div class="input-field-group">
+                    <label class="floating-label" for="add-supporter-amount">Amount (<span class="curr-sym">₹</span>) *</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-indian-rupee-sign input-prefix-icon"></i>
+                        <input type="number" id="add-supporter-amount" class="form-input" min="1" placeholder="Enter amount" required>
+                    </div>
+                </div>
+
+                <div class="input-field-group">
+                    <label class="floating-label" for="add-supporter-message">Message (Optional)</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-comment-dots input-prefix-icon"></i>
+                        <textarea id="add-supporter-message" class="form-input text-area" maxlength="150" placeholder="Enter message..."></textarea>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn-modal-action confirm" style="flex: 1;">Add Super Chat</button>
+                    <button type="button" class="btn-modal-action cancel" id="cancel-add-btn" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PREMIUM FOOTER -->
+    <footer class="footer-custom">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="assets/images/logo.png" alt="Payuu Live Logo" class="footer-logo-img dynamic-logo">
+                <div class="footer-brand-title" id="dyn-footer-brand">PAYUU LIVE</div>
+            </div>
+
+            <div class="footer-community-heading" id="dyn-footer-heading">Join the Payuu Live Community</div>
+
+            <div class="footer-social-row" id="footer-social-container">
+                <a href="https://kick.com/payuu-25" id="foot-link-kick" target="_blank" rel="noopener noreferrer" class="footer-social-btn kick">
+                    <svg class="kick-footer-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M2 2h20v20H2V2zm4 3.5v13h3.2v-5.2l3.8 5.2h4.2l-4.9-6.3L17 5.5h-4l-3.8 4.9V5.5H6z"/></svg>
+                    Kick
+                </a>
+                <a href="https://www.instagram.com/payuulive" id="foot-link-insta" target="_blank" rel="noopener noreferrer" class="footer-social-btn insta">
+                    <i class="fa-brands fa-instagram"></i> Instagram
+                </a>
+                <a href="https://www.youtube.com/@payuulive" id="foot-link-yt" target="_blank" rel="noopener noreferrer" class="footer-social-btn yt">
+                    <i class="fa-brands fa-youtube"></i> YouTube
+                </a>
+                <a href="https://discord.gg/nSZCe9mS62" id="foot-link-discord" target="_blank" rel="noopener noreferrer" class="footer-social-btn discord">
+                    <i class="fa-brands fa-discord"></i> Discord
+                </a>
+            </div>
+
+            <div class="footer-copyright">
+                © 2026 <strong id="dyn-footer-copy-brand">Payuu Live</strong>. All Rights Reserved.
+                <br>
+                <span class="footer-love" id="dyn-footer-love-text">Made with ❤️ by Payuu Live</span>
+            </div>
+
+            <button class="btn-admin-toggle" id="toggle-admin-btn">
+                <i class="fa-solid fa-lock"></i> Streamer Admin Panel
+            </button>
+        </div>
+    </footer>
+
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <!-- Firebase SDK Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-storage-compat.js"></script>
+
+<script src="firebase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
