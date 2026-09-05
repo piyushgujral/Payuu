@@ -23,6 +23,8 @@ payuu-live-platform/
 │   ├── queue.js
 │   ├── voice.js
 │   ├── overlay.js
+│   ├── engagement-admin.js
+│   ├── engagement-overlay.js
 │   ├── admin.js
 │   ├── analytics.js
 │   ├── settings.js
@@ -37,3 +39,6 @@ payuu-live-platform/
     ├── sounds/
     │   └── chime.mp3
     └── fonts/
+```
+
+Engagement controls and OBS overlay renderer are included for Like, Subscribe and Share alerts.
