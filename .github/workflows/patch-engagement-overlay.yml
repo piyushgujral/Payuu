@@ -1,0 +1,60 @@
+name: Enable Payuu Engagement Overlay
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-overlay:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch overlay.html
+        shell: bash
+        run: |
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('overlay.html')
+          text = path.read_text(encoding='utf-8')
+          original = text
+
+          # Load the engagement renderer after Firebase configuration.
+          marker = '    <script src="firebase.js"></script>'
+          script = '    <script src="js/engagement-overlay.js"></script>'
+          if script not in text and marker in text:
+              text = text.replace(marker, marker + '\n' + script, 1)
+
+          # Route engagement events away from the normal Super Chat renderer.
+          needle = '''                        window.firebaseDB.listenOverlay(\n                        async (data, key) => {\n\n                            if (!data || !key) {\n                                return;\n                            }'''
+          replacement = '''                        window.firebaseDB.listenOverlay(\n                        async (data, key) => {\n\n                            if (!data || !key) {\n                                return;\n                            }\n\n                            if (\n                                typeof window.payuuEngagementShow === "function" &&\n                                window.payuuEngagementShow(data, key)\n                            ) {\n                                return;\n                            }'''
+
+          if needle in text and 'window.payuuEngagementShow(data, key)' not in text:
+              text = text.replace(needle, replacement, 1)
+
+          if text == original:
+              print('No overlay patch required.')
+          else:
+              path.write_text(text, encoding='utf-8')
+              print('Engagement overlay patch applied.')
+          PY
+
+      - name: Commit overlay patch
+        shell: bash
+        run: |
+          if git diff --quiet -- overlay.html; then
+            echo 'No overlay.html change required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add overlay.html
+          git commit -m 'Wire engagement overlay into OBS source'
+          git push
