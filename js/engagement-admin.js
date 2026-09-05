@@ -8,28 +8,14 @@
     'use strict';
 
     const EVENTS = {
-        like: {
-            icon: '❤️',
-            title: 'LIKE THE STREAM',
-            message: 'If you are enjoying the stream, smash that Like button!'
-        },
-        subscribe: {
-            icon: '🔔',
-            title: 'SUBSCRIBE',
-            message: 'Subscribe to Payuu Live and join the community!'
-        },
-        share: {
-            icon: '📣',
-            title: 'SHARE THE STREAM',
-            message: 'Share the stream with your friends and help the community grow!'
-        }
+        like: { icon: '❤️', title: 'LIKE THE STREAM', message: 'If you are enjoying the stream, smash that Like button!' },
+        subscribe: { icon: '🔔', title: 'SUBSCRIBE', message: 'Subscribe to Payuu Live and join the community!' },
+        share: { icon: '📣', title: 'SHARE THE STREAM', message: 'Share the stream with your friends and help the community grow!' }
     };
 
     function getFirebaseDatabase() {
         try {
-            if (window.firebase && typeof firebase.database === 'function') {
-                return firebase.database();
-            }
+            if (window.firebase && typeof firebase.database === 'function') return firebase.database();
         } catch (error) {
             console.error('Payuu Engagement: Firebase database unavailable.', error);
         }
@@ -45,22 +31,13 @@
             return;
         }
 
-        const currentAdmin = window.PayuuAdminState || {};
-        const adminEmail = currentAdmin.email || 'Admin';
         const button = document.querySelector(`[data-engagement="${type}"]`);
-
         if (button) {
             button.disabled = true;
             button.dataset.originalText = button.innerHTML;
             button.innerHTML = '✓ SENDING...';
         }
 
-        /*
-           IMPORTANT:
-           Reuse firebaseDB.pushOverlayAlert() rather than writing a new
-           Firebase path. This keeps engagement events inside the existing
-           overlayQueue rules and validation.
-        */
         if (!window.firebaseDB || typeof window.firebaseDB.pushOverlayAlert !== 'function') {
             if (button) {
                 button.disabled = false;
@@ -70,23 +47,22 @@
             return;
         }
 
+        /* Keep the exact normal overlayQueue data shape for Firebase rules. */
         const payload = {
             name: config.title,
-            amount: 0,
-            msg: config.message,
-            messageSource: `engagement_${type}`,
+            amount: 1,
+            msg: `[[PAYUU_ENGAGEMENT:${type}]] ${config.message}`,
+            messageSource: 'text',
             voiceUrl: '',
             voiceMimeType: '',
             voiceDuration: 0,
             voiceStatus: 'none',
-            voiceEnabled: false,
-            triggeredBy: adminEmail,
-            engagementIcon: config.icon
+            voiceEnabled: false
         };
 
         window.firebaseDB.pushOverlayAlert(payload, '')
-            .then(key => {
-                console.log('Payuu Engagement sent:', type, key || 'queued');
+            .then(() => {
+                console.log('Payuu Engagement sent:', type);
                 if (button) {
                     setTimeout(() => {
                         button.disabled = false;
@@ -106,7 +82,6 @@
 
     function createControls() {
         if (document.getElementById('payuu-engagement-controls')) return;
-
         const adminPanel = document.getElementById('admin-panel');
         if (!adminPanel) return;
 
@@ -114,28 +89,19 @@
         box.id = 'payuu-engagement-controls';
         box.className = 'payuu-engagement-controls';
         box.innerHTML = `
-            <div class="payuu-engagement-title">
-                <span>📣</span> STREAM ENGAGEMENT OVERLAY
-            </div>
-            <div class="payuu-engagement-subtitle">
-                Trigger a Like, Subscribe or Share animation on the OBS overlay.
-            </div>
+            <div class="payuu-engagement-title"><span>📣</span> STREAM ENGAGEMENT OVERLAY</div>
+            <div class="payuu-engagement-subtitle">Trigger a Like, Subscribe or Share animation on the OBS overlay.</div>
             <div class="payuu-engagement-buttons">
                 <button type="button" class="payuu-engagement-btn like" data-engagement="like">❤️ LIKE</button>
                 <button type="button" class="payuu-engagement-btn subscribe" data-engagement="subscribe">🔔 SUBSCRIBE</button>
                 <button type="button" class="payuu-engagement-btn share" data-engagement="share">📣 SHARE</button>
             </div>
-            <div class="payuu-engagement-note">
-                The OBS Browser Source is the primary display. Each event is claimed once so extra browser previews do not duplicate the alert.
-            </div>
+            <div class="payuu-engagement-note">The OBS Browser Source is the primary display. Each event is claimed once so extra browser previews do not duplicate the alert.</div>
         `;
 
         const firstTabContent = document.getElementById('tab-content-queue');
-        if (firstTabContent) {
-            firstTabContent.insertBefore(box, firstTabContent.firstChild);
-        } else {
-            adminPanel.insertBefore(box, adminPanel.firstChild);
-        }
+        if (firstTabContent) firstTabContent.insertBefore(box, firstTabContent.firstChild);
+        else adminPanel.insertBefore(box, adminPanel.firstChild);
 
         box.querySelectorAll('[data-engagement]').forEach(button => {
             button.addEventListener('click', () => triggerEngagement(button.dataset.engagement));
@@ -144,7 +110,6 @@
 
     function addStyles() {
         if (document.getElementById('payuu-engagement-admin-style')) return;
-
         const style = document.createElement('style');
         style.id = 'payuu-engagement-admin-style';
         style.textContent = `
@@ -169,7 +134,6 @@
             setTimeout(waitForAdmin, 300);
             return;
         }
-
         window.firebaseDB.onAuthStateChanged(user => {
             if (!user) return;
             window.firebaseDB.checkAdminStatus(user.email, adminRecord => {
