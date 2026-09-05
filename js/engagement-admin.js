@@ -1,8 +1,8 @@
 /* ====================================================
    PAYUU LIVE - ENGAGEMENT OVERLAY CONTROLS
    Like / Subscribe / Share trigger panel for Admin
-   Uses the existing overlayQueue Firebase path so it
-   works with the database rules already used by Payuu.
+   Uses the existing overlayQueue structure so it follows
+   the same Firebase permissions/validation as Super Chats.
    ==================================================== */
 (function () {
     'use strict';
@@ -47,29 +47,46 @@
 
         const currentAdmin = window.PayuuAdminState || {};
         const adminEmail = currentAdmin.email || 'Admin';
-        const ref = db.ref('overlayQueue').push();
-
-        const payload = {
-            id: ref.key,
-            eventType: 'engagement',
-            type,
-            icon: config.icon,
-            title: config.title,
-            message: config.message,
-            triggeredBy: adminEmail,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        };
-
         const button = document.querySelector(`[data-engagement="${type}"]`);
+
         if (button) {
             button.disabled = true;
             button.dataset.originalText = button.innerHTML;
-            button.innerHTML = '✓ SENT';
+            button.innerHTML = '✓ SENDING...';
         }
 
-        ref.set(payload)
-            .then(() => {
-                console.log('Payuu Engagement sent:', type, ref.key);
+        /*
+           IMPORTANT:
+           Reuse firebaseDB.pushOverlayAlert() rather than writing a new
+           Firebase path. This keeps engagement events inside the existing
+           overlayQueue rules and validation.
+        */
+        if (!window.firebaseDB || typeof window.firebaseDB.pushOverlayAlert !== 'function') {
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText || config.title;
+            }
+            alert('Payuu Firebase overlay service is not available. Please refresh.');
+            return;
+        }
+
+        const payload = {
+            name: config.title,
+            amount: 0,
+            msg: config.message,
+            messageSource: `engagement_${type}`,
+            voiceUrl: '',
+            voiceMimeType: '',
+            voiceDuration: 0,
+            voiceStatus: 'none',
+            voiceEnabled: false,
+            triggeredBy: adminEmail,
+            engagementIcon: config.icon
+        };
+
+        window.firebaseDB.pushOverlayAlert(payload, '')
+            .then(key => {
+                console.log('Payuu Engagement sent:', type, key || 'queued');
                 if (button) {
                     setTimeout(() => {
                         button.disabled = false;
