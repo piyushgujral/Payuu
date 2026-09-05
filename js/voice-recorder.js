@@ -21,7 +21,8 @@
         duration: 0,
         startedAt: 0,
         timer: null,
-        uploading: false
+        uploading: false,
+        firebaseConnected: false
     };
 
     window.PayuuVoice = {
@@ -32,7 +33,8 @@
             voiceStatus: state.voiceUrl ? 'uploaded' : 'none',
             voiceEnabled: !!state.voiceUrl,
             uploading: state.uploading,
-            hasRecording: !!state.blob
+            hasRecording: !!state.blob,
+            firebaseConnected: state.firebaseConnected
         }),
         clear: clearRecording
     };
@@ -81,6 +83,25 @@
         }
         if (elapsed >= MAX_DURATION_SECONDS && state.recorder && state.recorder.state === 'recording') {
             state.recorder.stop();
+        }
+    }
+
+    function checkFirebaseConnection() {
+        try {
+            if (!window.firebase || !window.firebase.database) {
+                state.firebaseConnected = false;
+                console.error('Payuu Firebase: SDK/database library is not loaded.');
+                return;
+            }
+
+            const connectedRef = firebase.database().ref('.info/connected');
+            connectedRef.on('value', snapshot => {
+                state.firebaseConnected = snapshot.val() === true;
+                console.log('Payuu Firebase Realtime Database:', state.firebaseConnected ? 'CONNECTED' : 'DISCONNECTED');
+            });
+        } catch (error) {
+            state.firebaseConnected = false;
+            console.error('Payuu Firebase connection check failed:', error);
         }
     }
 
@@ -207,29 +228,25 @@
 
     async function uploadRecording() {
         if (!state.blob) return;
-        if (!window.firebaseDB || typeof window.firebaseDB.uploadVoiceRecording !== 'function') {
-            setStatus('Voice upload is not configured on this deployment.', true);
-            return;
-        }
 
         state.uploading = true;
         state.voiceUrl = '';
         setStatus('Uploading voice message…');
 
         try {
-            const extension = state.mimeType.includes('mp4')
-                ? 'm4a'
-                : state.mimeType.includes('ogg')
-                    ? 'ogg'
-                    : 'webm';
-            const fileName = `voice-${Date.now()}.${extension}`;
+            const type = state.mimeType || state.blob.type || 'audio/webm';
+            const response = await fetch('/api/upload-voice', {
+                method: 'POST',
+                headers: { 'Content-Type': type },
+                body: state.blob
+            });
 
-            state.voiceUrl = await window.firebaseDB.uploadVoiceRecording(
-                state.blob,
-                fileName,
-                state.mimeType || state.blob.type || 'audio/webm'
-            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.voiceUrl) {
+                throw new Error(data.error || `Upload failed (${response.status})`);
+            }
 
+            state.voiceUrl = data.voiceUrl;
             state.uploading = false;
             setStatus('✓ Voice uploaded. Payment is ready.');
         } catch (error) {
@@ -310,6 +327,8 @@
         const deleteBtn = $('voice-delete-btn');
         const form = $('tip-form');
 
+        checkFirebaseConnection();
+
         if (!recordBtn || !form) return;
 
         patchPendingSupport();
@@ -343,8 +362,6 @@
             deleteBtn.addEventListener('click', () => clearRecording());
         }
 
-        // Runs before the existing checkout submit handler. A recorded voice
-        // message must finish uploading before payment can be opened.
         form.addEventListener('submit', event => {
             if (!state.blob && !state.uploading && !state.voiceUrl) return;
 
