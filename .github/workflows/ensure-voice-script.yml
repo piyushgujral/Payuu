@@ -15,37 +15,50 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ensure voice recorder is loaded
+      - name: Ensure Payuu scripts are loaded
         shell: bash
         run: |
           set -e
           python3 - <<'PY'
           from pathlib import Path
 
-          path = Path('index.html')
-          text = path.read_text(encoding='utf-8')
-          tag = '    <script src="js/voice-recorder.js"></script>\n'
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
 
-          if 'js/voice-recorder.js' not in text:
-              marker = '    <script src="script.js"></script>'
-              if marker not in text:
-                  raise SystemExit('Could not find script.js in index.html')
-              text = text.replace(marker, tag + marker, 1)
-              path.write_text(text, encoding='utf-8')
-              print('Voice recorder script added to index.html')
-          else:
-              print('Voice recorder script already loaded')
+          scripts = [
+              '    <script src="js/voice-recorder.js"></script>\n',
+              '    <script src="js/engagement-admin.js"></script>\n'
+          ]
+          marker = '    <script src="script.js"></script>'
+          if marker not in text:
+              raise SystemExit('Could not find script.js in index.html')
+
+          for tag in scripts:
+              if tag.strip() not in text:
+                  text = text.replace(marker, tag + marker, 1)
+
+          index.write_text(text, encoding='utf-8')
+
+          overlay = Path('overlay.html')
+          overlay_text = overlay.read_text(encoding='utf-8')
+          overlay_marker = '    <script src="firebase.js"></script>'
+          engagement_tag = '    <script src="js/engagement-overlay.js"></script>\n'
+          if overlay_marker not in overlay_text:
+              raise SystemExit('Could not find firebase.js in overlay.html')
+          if engagement_tag.strip() not in overlay_text:
+              overlay_text = overlay_text.replace(overlay_marker, overlay_marker + '\n' + engagement_tag, 1)
+              overlay.write_text(overlay_text, encoding='utf-8')
           PY
 
-      - name: Commit index update
+      - name: Commit index and overlay updates
         shell: bash
         run: |
-          if git diff --quiet -- index.html; then
-            echo 'No index.html change required.'
+          if git diff --quiet -- index.html overlay.html; then
+            echo 'No script-loading changes required.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html
-          git commit -m 'Load Payuu voice recorder'
+          git add index.html overlay.html
+          git commit -m 'Load Payuu engagement overlay controls'
           git push
