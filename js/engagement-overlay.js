@@ -11,9 +11,8 @@
     const queue = [];
     let busy = false;
     let activeTimer = null;
+    let engagementListenerStarted = false;
 
-    // The current overlay.html had a stray engagement snippet inserted before <!DOCTYPE html>.
-    // Remove that visible text so the OBS page stays transparent/clean.
     function removeStrayText() {
         try {
             const walker = document.createTreeWalker(document.body || document, NodeFilter.SHOW_TEXT);
@@ -143,13 +142,36 @@
         return true;
     }
 
+    function listenEngagementQueue() {
+        if (engagementListenerStarted) return;
+        if (!window.firebaseDB || typeof window.firebaseDB.ref !== 'function') return;
+        engagementListenerStarted = true;
+        window.firebaseDB.ref('engagementQueue').limitToLast(20).on('child_added', snap => {
+            const data = snap.val();
+            if (!data || data.eventType !== 'engagement') return;
+            render({ data, key: snap.key });
+            // Remove after the event has been received so it cannot replay on refresh.
+            snap.ref.remove().catch(() => {});
+        });
+    }
+
     window.payuuEngagementShow = function (data, key) { return render({ data, key }); };
 
     document.addEventListener('DOMContentLoaded', () => {
         removeStrayText();
         createUI();
+        listenEngagementQueue();
         const pending = queue.splice(0);
         pending.forEach(render);
     });
+
+    function waitForFirebase() {
+        if (window.firebaseDB && typeof window.firebaseDB.ref === 'function') {
+            listenEngagementQueue();
+            return;
+        }
+        setTimeout(waitForFirebase, 300);
+    }
+    waitForFirebase();
     setTimeout(removeStrayText, 100);
 })();
