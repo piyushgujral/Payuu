@@ -16,7 +16,6 @@
 
     function createUI() {
         if (document.getElementById('payuu-engagement-alert')) return;
-
         const style = document.createElement('style');
         style.textContent = `
             #payuu-engagement-alert { position:fixed; left:50%; bottom:8%; transform:translate(-50%,30px) scale(.75); z-index:99999; width:min(720px,92vw); padding:26px 32px; text-align:center; border:2px solid #FFD700; border-radius:24px; background:rgba(7,25,47,.94); box-shadow:0 0 40px rgba(255,215,0,.55),inset 0 0 20px rgba(255,215,0,.12); color:#fff; opacity:0; pointer-events:none; transition:all .45s cubic-bezier(.34,1.56,.64,1); font-family:Poppins,Arial,sans-serif; }
@@ -28,20 +27,24 @@
             @media(max-width:600px){#payuu-engagement-alert{padding:20px}#payuu-engagement-icon{font-size:3rem}#payuu-engagement-title{font-size:1.35rem}#payuu-engagement-message{font-size:.85rem}}
         `;
         document.head.appendChild(style);
-
         const box = document.createElement('div');
         box.id = 'payuu-engagement-alert';
         box.innerHTML = '<div id="payuu-engagement-icon"></div><div id="payuu-engagement-title"></div><div id="payuu-engagement-message"></div><div id="payuu-engagement-brand">PAYUU LIVE</div>';
         document.body.appendChild(box);
     }
 
+    function parseEvent(data) {
+        const msg = String(data?.msg || '');
+        const match = msg.match(/^\[\[PAYUU_ENGAGEMENT:(like|subscribe|share)\]\]\s*/i);
+        if (!match) return null;
+        return { type: match[1].toLowerCase(), message: msg.slice(match[0].length).trim() };
+    }
+
     function render(data, key) {
-        const source = String(data?.messageSource || '');
-        if (!source.startsWith('engagement_')) return false;
+        const event = parseEvent(data);
+        if (!event) return false;
 
-        const type = source.slice('engagement_'.length);
-        const cfg = CONFIGS[type] || CONFIGS.like;
-
+        const cfg = CONFIGS[event.type] || CONFIGS.like;
         if (busy) {
             queue.push({ data, key });
             return true;
@@ -54,29 +57,24 @@
         }
 
         busy = true;
-
         document.getElementById('payuu-engagement-icon').textContent = cfg.icon;
         document.getElementById('payuu-engagement-title').textContent = cfg.title;
-        document.getElementById('payuu-engagement-message').textContent = cfg.message;
+        document.getElementById('payuu-engagement-message').textContent = event.message || cfg.message;
 
         box.classList.remove('active');
         void box.offsetWidth;
         box.classList.add('active');
 
         try {
-            if (typeof confetti === 'function') {
-                confetti({ particleCount: 90, spread: 90, origin: { y: 0.55 } });
-            }
+            if (typeof confetti === 'function') confetti({ particleCount: 90, spread: 90, origin: { y: 0.55 } });
         } catch (_) {}
 
         setTimeout(() => {
             box.classList.remove('active');
-
             setTimeout(() => {
                 if (key && window.firebaseDB && typeof window.firebaseDB.removeOverlayAlert === 'function') {
                     window.firebaseDB.removeOverlayAlert(key).catch(() => {});
                 }
-
                 busy = false;
                 const next = queue.shift();
                 if (next) render(next.data, next.key);
