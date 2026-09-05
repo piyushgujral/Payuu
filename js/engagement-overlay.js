@@ -1,21 +1,18 @@
 /* ====================================================
    PAYUU LIVE - LIKE / SUBSCRIBE / SHARE OVERLAY
-   Reads engagement events from the existing overlayQueue.
-   This keeps engagement alerts compatible with the same
-   Firebase rules and OBS overlay already used by Payuu.
+   Renderer for engagement events coming through overlayQueue.
    ==================================================== */
 (function () {
     'use strict';
 
-    const clientId = 'engagement-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-    const queue = [];
-    let busy = false;
-
-    const configs = {
+    const CONFIGS = {
         like: { icon: '❤️', title: 'LIKE THE STREAM', message: 'Smash that Like button!' },
         subscribe: { icon: '🔔', title: 'SUBSCRIBE', message: 'Subscribe to Payuu Live and join the community!' },
         share: { icon: '📣', title: 'SHARE THE STREAM', message: 'Share the stream and help the community grow!' }
     };
+
+    const queue = [];
+    let busy = false;
 
     function createUI() {
         if (document.getElementById('payuu-engagement-alert')) return;
@@ -38,42 +35,29 @@
         document.body.appendChild(box);
     }
 
-    function claim(key) {
-        if (!window.firebase || typeof firebase.database !== 'function') return Promise.resolve(false);
+    function render(data, key) {
+        const source = String(data?.messageSource || '');
+        if (!source.startsWith('engagement_')) return false;
 
-        const ref = firebase.database().ref('overlayQueue/' + key);
-        const now = Date.now();
+        const type = source.slice('engagement_'.length);
+        const cfg = CONFIGS[type] || CONFIGS.like;
 
-        return ref.transaction(current => {
-            if (!current || current.eventType !== 'engagement') return;
-
-            const claimedAt = Number(current.claimedAt || 0);
-            if (current.claimedBy && (now - claimedAt) <= 90000) return;
-
-            return { ...current, claimedBy: clientId, claimedAt: now };
-        }).then(result => !!result.committed).catch(error => {
-            console.error('Payuu Engagement claim failed:', error);
-            return false;
-        });
-    }
-
-    function show(item, key) {
         if (busy) {
-            queue.push({ item, key });
-            return;
+            queue.push({ data, key });
+            return true;
+        }
+
+        const box = document.getElementById('payuu-engagement-alert');
+        if (!box) {
+            queue.push({ data, key });
+            return true;
         }
 
         busy = true;
-        const cfg = configs[item.type] || configs.like;
-        const box = document.getElementById('payuu-engagement-alert');
-        if (!box) {
-            busy = false;
-            return;
-        }
 
-        document.getElementById('payuu-engagement-icon').textContent = item.icon || cfg.icon;
-        document.getElementById('payuu-engagement-title').textContent = item.title || cfg.title;
-        document.getElementById('payuu-engagement-message').textContent = item.message || cfg.message;
+        document.getElementById('payuu-engagement-icon').textContent = cfg.icon;
+        document.getElementById('payuu-engagement-title').textContent = cfg.title;
+        document.getElementById('payuu-engagement-message').textContent = cfg.message;
 
         box.classList.remove('active');
         void box.offsetWidth;
@@ -89,31 +73,24 @@
             box.classList.remove('active');
 
             setTimeout(() => {
-                if (window.firebase && typeof firebase.database === 'function') {
-                    firebase.database().ref('overlayQueue/' + key).remove().catch(() => {});
+                if (key && window.firebaseDB && typeof window.firebaseDB.removeOverlayAlert === 'function') {
+                    window.firebaseDB.removeOverlayAlert(key).catch(() => {});
                 }
 
                 busy = false;
                 const next = queue.shift();
-                if (next) show(next.item, next.key);
+                if (next) render(next.data, next.key);
             }, 500);
         }, 6000);
+
+        return true;
     }
+
+    window.payuuEngagementShow = render;
 
     document.addEventListener('DOMContentLoaded', () => {
         createUI();
-
-        if (!window.firebase || typeof firebase.database !== 'function') {
-            console.error('Payuu Engagement Overlay: Firebase is not loaded.');
-            return;
-        }
-
-        firebase.database().ref('overlayQueue').on('child_added', async snap => {
-            const data = snap.val();
-            if (!data || data.eventType !== 'engagement' || !data.type) return;
-
-            const claimed = await claim(snap.key);
-            if (claimed) show(data, snap.key);
-        });
+        const pending = queue.splice(0);
+        pending.forEach(item => render(item.data, item.key));
     });
 })();
