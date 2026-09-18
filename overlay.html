@@ -44,7 +44,7 @@ async function playRecordedVoice(item,onDone){
   const legacyUrl=String(item?.voiceUrl||"").trim();
   const url=key?"/api/play-voice?key="+encodeURIComponent(key):legacyUrl;
   if(!url){
-    console.warn("Original voice missing voiceKey/voiceUrl",item);
+    console.error("PAYUU VOICE: no voiceKey/voiceUrl on overlay item",item);
     done();
     return false;
   }
@@ -53,53 +53,88 @@ async function playRecordedVoice(item,onDone){
   const finish=()=>{
     if(finished)return;
     finished=true;
-    try{if(recordedVoiceSource)recordedVoiceSource.stop()}catch(_){}
-    recordedVoiceSource=null;
     done();
   };
 
+  console.log("PAYUU VOICE: attempting recorded playback",{key,url,mime:item?.voiceMimeType,duration:item?.voiceDuration});
+
+  // First use a plain audio element. This is the most reliable path in
+  // OBS Browser Source/Chromium after speechSynthesis has finished.
+  const player=document.getElementById("recorded-voice-player");
+  if(!player){
+    console.error("PAYUU VOICE: audio element missing");
+    finish();
+    return false;
+  }
+
+  try{
+    player.pause();
+    player.removeAttribute("src");
+    player.load();
+    player.src=url;
+    player.volume=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
+    player.muted=false;
+    player.autoplay=false;
+    player.onended=finish;
+    player.onerror=()=>{
+      const mediaError=player.error;
+      console.error("PAYUU VOICE: HTML audio error",{
+        code:mediaError?.code,
+        message:mediaError?.message,
+        networkState:player.networkState,
+        readyState:player.readyState,
+        url
+      });
+    };
+    player.load();
+
+    // Give the TTS engine a moment to release its audio output before
+    // starting the recorded stream.
+    await new Promise(resolve=>setTimeout(resolve,150));
+
+    const p=player.play();
+    if(p&&typeof p.then==="function"){
+      await p;
+    }
+    console.log("PAYUU VOICE: HTML audio playback started",{key});
+    return true;
+  }catch(htmlError){
+    console.warn("PAYUU VOICE: HTML audio playback failed; trying Web Audio",{
+      name:htmlError?.name,message:htmlError?.message,key
+    });
+  }
+
+  // Fallback: decode the same R2 response and play it through AudioContext.
   try{
     const ctx=ensureRecordedVoiceOutput();
-    if(!ctx){
-      console.error("No AudioContext available for recorded voice");
-      finish();
-      return false;
-    }
-    if(ctx.state==="suspended"){
-      try{await ctx.resume();}catch(e){console.warn("AudioContext resume failed:",e)}
-    }
+    if(!ctx)throw new Error("AudioContext unavailable");
+    if(ctx.state==="suspended")await ctx.resume();
 
-    // Fetch and decode the R2 audio ourselves. This avoids the browser's
-    // HTMLMediaElement autoplay gate that was preventing the voice after TTS.
     const response=await fetch(url,{cache:"no-store",credentials:"same-origin"});
-    if(!response.ok)throw new Error("Voice fetch failed: HTTP "+response.status);
-    const arrayBuffer=await response.arrayBuffer();
-    const audioBuffer=await ctx.decodeAudioData(arrayBuffer.slice(0));
+    if(!response.ok)throw new Error("Voice fetch HTTP "+response.status);
+    const buffer=await response.arrayBuffer();
+    const audioBuffer=await ctx.decodeAudioData(buffer.slice(0));
 
-    if(ctx.state==="suspended")await ctx.resume().catch(()=>{});
     const source=ctx.createBufferSource();
     const gain=ctx.createGain();
     gain.gain.value=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
     source.buffer=audioBuffer;
     source.connect(gain);
     gain.connect(ctx.destination);
-    recordedVoiceSource=source;
     source.onended=finish;
-
     source.start(0);
-    console.log("Recorded supporter voice started",{
-      key:key||"legacy-url",
-      duration:audioBuffer.duration,
-      contextState:ctx.state
-    });
+
+    console.log("PAYUU VOICE: Web Audio fallback started",{key,duration:audioBuffer.duration});
     return true;
-  }catch(e){
-    console.error("Recorded supporter voice playback failed:",e,{key:key||"legacy-url",url});
+  }catch(webAudioError){
+    console.error("PAYUU VOICE: BOTH playback methods failed",{
+      key,url,
+      error:webAudioError?.message||String(webAudioError)
+    });
     finish();
     return false;
   }
 }
-
 function playAlertSpeech(item,onDone){const msg=cleanSpeechText(item?.msg),done=typeof onDone==='function'?onDone:()=>{};speak(buildIntro(item),()=>{if(msg)speak(`Message: ${msg}`,done);else done()});}
 async function showNormalAlert(item,key){
   if(!item||item.eventType==="engagement")return;
