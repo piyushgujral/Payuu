@@ -400,6 +400,7 @@ function renderPendingQueue() {
 
             <div class="admin-actions-row">
                 <button class="btn-admin-act details" onclick="viewRequestDetails(${index})"><i class="fa-solid fa-eye"></i> Details</button>
+                ${String(item.voiceKey || item.voiceUrl || '').trim() ? `<button class="btn-admin-act details" onclick="playPendingVoice(${index})"><i class="fa-solid fa-volume-high"></i> Play Voice</button>` : ''}
                 <button class="btn-admin-act approve" onclick="approveSuperchat('${item._key}', ${index})"><i class="fa-solid fa-check"></i> Approve</button>
                 <button class="btn-admin-act reject" onclick="rejectSuperchat('${item._key}')"><i class="fa-solid fa-xmark"></i> Reject</button>
             </div>
@@ -765,6 +766,48 @@ function fileToBase64(file) {
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+}
+
+let pendingAdminVoicePlayer = null;
+async function playPendingVoice(index) {
+    const item = STATE.pendingQueue[index];
+    if (!item) return;
+
+    let url = String(item.voiceUrl || '').trim();
+    const key = String(item.voiceKey || '').trim();
+
+    try {
+        if (url && !/^https?:\/\//i.test(url) && window.firebase?.storage) {
+            url = /^gs:\/\//i.test(url)
+                ? await firebase.storage().refFromURL(url).getDownloadURL()
+                : await firebase.storage().ref(url.replace(/^\/+/, '')).getDownloadURL();
+        }
+
+        if (!url && key) {
+            if (/^https?:\/\//i.test(key)) {
+                url = key;
+            } else if (/^gs:\/\//i.test(key) && window.firebase?.storage) {
+                url = await firebase.storage().refFromURL(key).getDownloadURL();
+            } else if (/^superchat-voice\//i.test(key) && window.firebase?.storage) {
+                url = await firebase.storage().ref(key).getDownloadURL();
+            } else {
+                url = '/api/play-voice?key=' + encodeURIComponent(key);
+            }
+        }
+
+        if (!url) throw new Error('No voice recording reference found.');
+
+        if (pendingAdminVoicePlayer) pendingAdminVoicePlayer.pause();
+
+        const audio = new Audio(url);
+        pendingAdminVoicePlayer = audio;
+        audio.preload = 'auto';
+        audio.volume = 1;
+        await audio.play();
+    } catch (error) {
+        console.error('PAYUU ADMIN VOICE PLAYBACK FAILED', { item, error: error?.message || String(error) });
+        alert('Voice playback failed. Check the browser console for the recording reference/error.');
+    }
 }
 
 function approveSuperchat(key, index) {
