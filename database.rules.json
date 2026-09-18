@@ -1,0 +1,49 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "admins": {
+      ".read": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true",
+      "$adminKey": {
+        ".write": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('role').val() === 'owner'"
+      }
+    },
+    "pendingSupport": {
+      ".read": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true",
+      "$id": {
+        ".write": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true || (!data.exists() && newData.exists())",
+        ".validate": "newData.hasChildren(['id','name','amount','msg','status','timestamp']) && newData.child('id').isString() && newData.child('id').val() === $id && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80 && newData.child('amount').isNumber() && newData.child('amount').val() >= 40 && newData.child('amount').val() <= 50000 && newData.child('msg').isString() && newData.child('msg').val().length <= 150 && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 60000 && newData.child('status').isString()"
+      }
+    },
+    "approvedSupport": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true",
+        ".validate": "newData.hasChildren(['id','name','amount','msg','status','approvedAt']) && newData.child('id').isString() && newData.child('id').val() === $id && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80 && newData.child('amount').isNumber() && newData.child('amount').val() >= 40 && newData.child('amount').val() <= 50000 && newData.child('msg').isString() && newData.child('msg').val().length <= 150 && newData.child('status').val() === 'Approved'"
+      }
+    },
+    "overlayQueue": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true || (data.exists() && newData.exists() && newData.child('name').val() === data.child('name').val() && newData.child('amount').val() === data.child('amount').val() && newData.child('msg').val() === data.child('msg').val() && newData.child('approvedKey').val() === data.child('approvedKey').val() && newData.child('voiceKey').val() === data.child('voiceKey').val() && newData.child('claimedBy').isString() && newData.child('claimedAt').isNumber() && newData.child('claimedAt').val() <= now + 60000 && newData.child('claimedAt').val() >= now - 120000) || (data.exists() && !newData.exists() && data.child('claimedBy').isString())",
+        ".validate": "newData.hasChildren(['id','name','amount','timestamp']) && newData.child('id').isString() && newData.child('id').val() === $id && newData.child('name').isString() && newData.child('name').val().length <= 80 && newData.child('amount').isNumber() && newData.child('amount').val() >= 40 && newData.child('amount').val() <= 50000 && newData.child('timestamp').isNumber()"
+      }
+    },
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('role').val() === 'owner'"
+    },
+    "auditLogs": {
+      ".read": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true",
+      "$id": {
+        ".write": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true"
+      }
+    },
+    "notificationLogs": {
+      ".read": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true",
+      "$id": {
+        ".write": "auth != null && auth.token.email != null && root.child('admins').child(auth.token.email.toLowerCase().replace('@','_').replace('.','_')).child('active').val() === true"
+      }
+    }
+  }
+}
