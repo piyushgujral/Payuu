@@ -112,21 +112,20 @@ async function playRecordedVoice(item,onDone){
         finishOnce();
       };
 
-      source.start(0);
-      console.log("Original supporter voice started",{
-        key:key||"legacy-url",
-        duration:audioBuffer.duration,
-        contextState:ctx.state,
-        contentType,
-        contentLength
-      });
-
-      // WebAudio start can be blocked by the host's autoplay policy. If the
-      // context is not actually running, use the media-element path below.
       if(ctx.state==="running"){
+        source.start(0);
+        console.log("Original supporter voice started",{
+          key:key||"legacy-url",
+          duration:audioBuffer.duration,
+          contextState:ctx.state,
+          contentType,
+          contentLength
+        });
         return true;
       }
-      try{source.stop();}catch(_){}
+
+      try{source.disconnect()}catch(_){}
+      try{gain.disconnect()}catch(_){}
     }
   }catch(e){
     console.error("Original supporter voice WebAudio playback failed:",e,url);
