@@ -57,7 +57,20 @@ async function playRecordedVoice(item,onDone){
       }
     }
     if(!url && legacyUrl){
-      url=legacyUrl;
+      if(/^https?:\/\//i.test(legacyUrl)){
+        url=legacyUrl;
+      }else if(window.firebase?.storage){
+        try{
+          const ref=/^gs:\/\//i.test(legacyUrl)
+            ? firebase.storage().refFromURL(legacyUrl)
+            : firebase.storage().ref(legacyUrl.replace(/^\/+/, ""));
+          url=await ref.getDownloadURL();
+        }catch(pathError){
+          console.warn("PAYUU VOICE: legacy voice path could not be resolved",{
+            legacyUrl,message:pathError?.message
+          });
+        }
+      }
     }
     if(!url && key){
       url="/api/play-voice?key="+encodeURIComponent(key);
