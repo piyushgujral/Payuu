@@ -42,9 +42,36 @@ async function playRecordedVoice(item,onDone){
   const done=typeof onDone==="function"?onDone:()=>{};
   const key=String(item?.voiceKey||"").trim();
   const legacyUrl=String(item?.voiceUrl||"").trim();
-  const url=key?"/api/play-voice?key="+encodeURIComponent(key):legacyUrl;
+
+  // New recordings use Cloudflare R2 voice keys. Older recordings may have
+  // a Firebase Storage path in voiceKey/voiceUrl. Resolve those legacy
+  // references before falling back to the R2 endpoint.
+  let url="";
+  try{
+    if(key && (/^gs:\/\//i.test(key)||/^https?:\/\//i.test(key)||/^superchat-voice\//i.test(key))){
+      if(/^https?:\/\//i.test(key)){
+        url=key;
+      }else if(window.firebase?.storage){
+        const ref=firebase.storage().refFromURL(/^gs:\/\//i.test(key)?key:key);
+        url=await ref.getDownloadURL();
+      }
+    }
+    if(!url && legacyUrl){
+      url=legacyUrl;
+    }
+    if(!url && key){
+      url="/api/play-voice?key="+encodeURIComponent(key);
+    }
+  }catch(legacyError){
+    console.warn("PAYUU VOICE: legacy Firebase Storage URL resolution failed",{
+      key,message:legacyError?.message
+    });
+    if(legacyUrl)url=legacyUrl;
+    else if(key && !/^superchat-voice\//i.test(key))url="/api/play-voice?key="+encodeURIComponent(key);
+  }
+
   if(!url){
-    console.error("PAYUU VOICE: no voiceKey/voiceUrl on overlay item",item);
+    console.error("PAYUU VOICE: no playable voice reference on overlay item",item);
     done();
     return false;
   }
