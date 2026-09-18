@@ -19,7 +19,8 @@ function contentTypeForKey(key) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.setHeader("Allow", "GET, HEAD");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
@@ -31,19 +32,31 @@ export default async function handler(req, res) {
   }
 
   try {
+    const range = String(req.headers.range || "").trim();
     const object = await s3.send(
       new GetObjectCommand({
         Bucket: process.env.R2_BUCKET_NAME,
         Key: key,
+        ...(range ? { Range: range } : {}),
       })
     );
 
     res.setHeader("Content-Type", object.ContentType || contentTypeForKey(key));
-    res.setHeader("Cache-Control", "private, max-age=300");
+    res.setHeader("Content-Disposition", "inline");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Cache-Control", "private, max-age=300, stale-while-revalidate=60");
     if (object.ContentLength != null) {
       res.setHeader("Content-Length", String(object.ContentLength));
     }
+    if (object.ContentRange) {
+      res.setHeader("Content-Range", object.ContentRange);
+      res.statusCode = 206;
+    }
     res.setHeader("Accept-Ranges", "bytes");
+
+    if (req.method === "HEAD") {
+      return res.status(res.statusCode || 200).end();
+    }
 
     if (!object.Body) {
       return res.status(404).json({ error: "Voice recording not found" });
