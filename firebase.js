@@ -1138,6 +1138,7 @@ window.firebaseDB = {
         }
 
         voiceUploadUrl = "";
+        voiceUploadKey = "";
         voiceUploadFailed = true;
 
         setUploadStatus(
