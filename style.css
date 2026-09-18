@@ -1371,3 +1371,60 @@ body {
 @keyframes payuuVoiceSpinner {
     to { transform: rotate(360deg); }
 }
+
+/* MOBILE SUPPORTER FEED VISIBILITY FIX */
+.supporters-feed {
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 280px;
+    padding: 2px 0;
+}
+
+.feed-card {
+    width: 100%;
+    min-height: 44px;
+    height: auto;
+    flex: 0 0 auto;
+    overflow: visible !important;
+}
+
+.feed-card-header {
+    width: 100%;
+    min-height: 44px;
+    height: auto !important;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    line-height: 1.4 !important;
+    overflow: visible !important;
+}
+
+.feed-card-user {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.4 !important;
+    white-space: normal;
+    overflow: visible !important;
+    text-overflow: clip;
+    word-break: break-word;
+}
+
+.feed-card-amount {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    line-height: 1.4 !important;
+    overflow: visible !important;
+}
+
+.feed-card-body {
+    line-height: 1.4 !important;
+    overflow-wrap: anywhere;
+}
