@@ -29,6 +29,7 @@
     window.PayuuVoice = {
         getState: () => ({
             voiceUrl: state.voiceUrl,
+            voiceKey: state.voiceKey,
             voiceMimeType: state.mimeType,
             voiceDuration: state.duration,
             voiceStatus: state.voiceUrl ? 'uploaded' : 'none',
