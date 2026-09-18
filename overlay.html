@@ -38,6 +38,25 @@ function ensureRecordedVoiceOutput(){
   }
 }
 
+function prepareRecordedVoice(item){
+  try{
+    const key=String(item?.voiceKey||"").trim();
+    const legacyUrl=String(item?.voiceUrl||"").trim();
+    let url=key?"/api/play-voice?key="+encodeURIComponent(key):legacyUrl;
+    if(!url)return;
+    const player=document.getElementById("recorded-voice-player");
+    if(!player)return;
+    player.pause();
+    player.onended=null;
+    player.onerror=null;
+    player.src=url;
+    player.preload="auto";
+    player.load();
+  }catch(e){
+    console.warn("PAYUU VOICE: preloading failed",e);
+  }
+}
+
 async function playRecordedVoice(item,onDone){
   const done=typeof onDone==="function"?onDone:()=>{};
   const key=String(item?.voiceKey||"").trim();
@@ -128,10 +147,8 @@ async function playRecordedVoice(item,onDone){
     };
     player.load();
 
-    // Give the TTS engine a moment to release its audio output before
-    // starting the recorded stream.
-    await new Promise(resolve=>setTimeout(resolve,150));
-
+    // The voice is preloaded while TTS is running, so playback can begin
+    // immediately when TTS ends. Do not add an artificial delay here.
     const p=player.play();
     if(p&&typeof p.then==="function"){
       await p;
@@ -186,6 +203,7 @@ async function showNormalAlert(item,key){
 
   playAlertChime();
   triggerConfettiBurst();
+  if(String(item.voiceKey||item.voiceUrl||"").trim()) prepareRecordedVoice(item);
 
   await new Promise(resolve=>{
     showNormalAlertCard(item);
