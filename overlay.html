@@ -8,63 +8,117 @@ function triggerConfettiBurst(){try{if(siteSettings.overlay?.confetti!==false&&t
 function cleanSpeechText(t){return String(t||"").replace(/https?:\/\/\S+/gi,"").replace(/www\.\S+/gi,"").replace(/\s+/g," ").trim()}
 function buildIntro(item){const name=cleanSpeechText(item?.name)||"A Supporter",amount=Number(item?.amount||0),lang=String(siteSettings.voice?.language||"en-IN").toLowerCase();return lang.startsWith("hi")?`${name} ने ${amount} रुपये का सपोर्ट किया।`:`New Support! ${name} supported ${amount} rupees.`}
 function speak(text,onDone){const done=typeof onDone==='function'?onDone:()=>{};try{if(!siteSettings.voice?.enabled||!window.speechSynthesis){done();return}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(cleanSpeechText(text));u.lang=siteSettings.voice?.language||"en-IN";u.volume=Number(siteSettings.voice?.volume??.9);u.pitch=Number(siteSettings.voice?.pitch??1);u.rate=Number(siteSettings.voice?.rate??1);u.onend=done;u.onerror=done;window.speechSynthesis.speak(u)}catch(_){done()}}
-function ensureRecordedVoiceOutput(){const p=document.getElementById("recorded-voice-player");if(!p)return null;return p}
-function playRecordedVoice(item,onDone){
-  const done=typeof onDone==='function'?onDone:()=>{};
+function ensureRecordedVoiceOutput(){
+  try{
+    const A=window.AudioContext||window.webkitAudioContext;
+    if(!A)return null;
+    if(!recordedVoiceAudioContext){
+      recordedVoiceAudioContext=new A();
+    }
+    if(recordedVoiceAudioContext.state==="suspended"){
+      recordedVoiceAudioContext.resume().catch(()=>{});
+    }
+    return recordedVoiceAudioContext;
+  }catch(e){
+    console.error("Original voice AudioContext unavailable:",e);
+    return null;
+  }
+}
+
+async function playRecordedVoice(item,onDone){
+  const done=typeof onDone==="function"?onDone:()=>{};
   const key=String(item?.voiceKey||"").trim();
   const legacyUrl=String(item?.voiceUrl||"").trim();
   const url=key
     ? "/api/play-voice?key="+encodeURIComponent(key)
     : legacyUrl;
-  if(!url){done();return false}
-  const p=document.getElementById("recorded-voice-player");
-  if(!p){done();return false}
-  try{
-    p.pause();
-    p.onended=null;
-    p.onerror=null;
-    p.removeAttribute("src");
-    p.load();
-    p.src=url;
-    p.preload="auto";
-    p.playsInline=true;
-    p.volume=Math.max(
-      0,
-      Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9))
-    );
-    const finish=()=>{
-      p.onended=null;
-      p.onerror=null;
-      done()
-    };
-    p.onended=finish;
-    p.onerror=()=>{
-      console.error(
-        "Original supporter voice playback failed:",
-        p.error?.code,
-        p.error?.message,
-        url
-      );
-      finish()
-    };
-    const q=p.play();
-    if(q&&typeof q.catch==='function'){
-      q.catch(e=>{
-        console.error("Original supporter voice play() rejected:",e,url);
-        finish()
-      });
-    }
-    return true
-  }catch(e){
-    console.error("Original supporter voice error:",e);
+
+  if(!url){
+    console.warn("Original voice missing voiceKey/voiceUrl",item);
     done();
-    return false
+    return false;
+  }
+
+  try{
+    const ctx=ensureRecordedVoiceOutput();
+    if(!ctx){
+      throw new Error("AudioContext is not available");
+    }
+
+    if(ctx.state==="suspended"){
+      await ctx.resume().catch(()=>{});
+    }
+
+    const response=await fetch(url,{cache:"no-store"});
+    if(!response.ok){
+      throw new Error("Voice server returned HTTP "+response.status);
+    }
+
+    const arrayBuffer=await response.arrayBuffer();
+    if(!arrayBuffer.byteLength){
+      throw new Error("Voice recording is empty");
+    }
+
+    const audioBuffer=await new Promise((resolve,reject)=>{
+      ctx.decodeAudioData(arrayBuffer,resolve,reject);
+    });
+
+    if(recordedVoiceSource){
+      try{recordedVoiceSource.stop()}catch(_){}
+      try{recordedVoiceSource.disconnect()}catch(_){}
+      recordedVoiceSource=null;
+    }
+
+    const source=ctx.createBufferSource();
+    const gain=ctx.createGain();
+    const volume=Math.max(
+      0,
+      Math.min(
+        1,
+        Number(item?.voiceVolume??siteSettings.voice?.volume??.9)
+      )
+    );
+
+    source.buffer=audioBuffer;
+    gain.gain.value=volume;
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    recordedVoiceSource=source;
+
+    source.onended=()=>{
+      if(recordedVoiceSource===source){
+        recordedVoiceSource=null;
+      }
+      try{source.disconnect()}catch(_){}
+      try{gain.disconnect()}catch(_){}
+      done();
+    };
+
+    source.start(0);
+    console.log(
+      "Original supporter voice started:",
+      key||"legacy-url",
+      "duration:",
+      audioBuffer.duration
+    );
+    return true;
+  }catch(e){
+    console.error(
+      "Original supporter voice playback failed:",
+      e,
+      url
+    );
+    done();
+    return false;
   }
 }
+
 function playAlertSpeech(item,onDone){const msg=cleanSpeechText(item?.msg),done=typeof onDone==='function'?onDone:()=>{};speak(buildIntro(item),()=>{if(msg)speak(`Message: ${msg}`,done);else done()});}
 function showNormalAlert(item,key){if(!item||item.eventType==="engagement")return;const id=String(key||item.id||"");if(id&&displayedSuperChats.has(id))return;const ts=Number(item.timestamp||0);if(ts&&ts<overlayOpenedAt)return;if(id)displayedSuperChats.add(id);playAlertChime();triggerConfettiBurst();showNormalAlertCard(item)}
 function showNormalAlertCard(item){const card=document.getElementById("alert-card");if(!card)return;document.getElementById("alert-name").textContent=item.name||"A Supporter";document.getElementById("alert-amount").textContent=`₹${Number(item.amount||0).toLocaleString("en-IN")}`;document.getElementById("alert-message").textContent=item.msg||"";card.classList.add("active");const duration=Math.max(3,Math.min(30,Number(siteSettings.overlay?.duration||8)));setTimeout(()=>card.classList.remove("active"),duration*1000);if(String(item.voiceKey||item.voiceUrl||"").trim()){
-  playAlertSpeech(item,()=>playRecordedVoice(item));
+  // Play the creator's original recording independently of browser TTS.
+  // TTS starts after the recording finishes so the two audio streams never overlap.
+  playRecordedVoice(item,()=>playAlertSpeech(item));
 }else{
   playAlertSpeech(item);
 }}
