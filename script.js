@@ -732,25 +732,25 @@ function sendAdminEmailNotification(submissionData) {
 
                 emailjs.send(emailCfg.serviceId, emailCfg.templateId, templateParams)
                     .then(() => {
-                        window.firebaseDB.logNotificationAttempt({
+                        Promise.resolve(window.firebaseDB.logNotificationAttempt({
                             recipient: adminEmail,
                             supporterName: submissionData.name,
                             amount: submissionData.amount,
                             status: "SENT"
-                        });
+                        })).catch(err => console.warn("Notification log skipped:", err));
                     })
                     .catch((err) => {
                         console.error("EmailJS Notification Failed for " + adminEmail + ":", err);
                         const warningBadge = document.getElementById('email-status-warning');
                         if (warningBadge) warningBadge.style.display = 'inline-block';
 
-                        window.firebaseDB.logNotificationAttempt({
+                        Promise.resolve(window.firebaseDB.logNotificationAttempt({
                             recipient: adminEmail,
                             supporterName: submissionData.name,
                             amount: submissionData.amount,
                             status: "FAILED",
                             error: err.text || err.message || JSON.stringify(err)
-                        });
+                        })).catch(logErr => console.warn("Notification failure log skipped:", logErr));
                     });
             });
         });
