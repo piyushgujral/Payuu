@@ -44,29 +44,28 @@ window.firebaseDB = {
      ==================================================== */
 
   checkAdminStatus: function(userEmail, callback) {
-    db.ref("admins").once("value", (snapshot) => {
+    const email = String(userEmail || "").trim().toLowerCase();
+    if (!email) {
+      callback(null);
+      return;
+    }
 
-      const admins = snapshot.val() || {};
-      let matchedAdmin = null;
+    const key = email.replace(/[@.]/g, "_");
 
-      Object.keys(admins).forEach(uid => {
-
-        if (
-          admins[uid].email &&
-          admins[uid].email.toLowerCase() ===
-            userEmail.toLowerCase()
-        ) {
-
-          matchedAdmin = {
-            uid,
-            ...admins[uid]
-          };
-        }
-
+    db.ref("admins/" + key)
+      .once("value")
+      .then(snapshot => {
+        const record = snapshot.val();
+        callback(
+          record
+            ? { uid: key, ...record }
+            : null
+        );
+      })
+      .catch(error => {
+        console.warn("Admin status lookup failed:", error);
+        callback(null);
       });
-
-      callback(matchedAdmin);
-    });
   },
 
   listenAdmins: function(callback) {
