@@ -367,7 +367,10 @@ window.firebaseDB = {
 
         }
 
-        return data.voiceUrl;
+        return {
+          voiceUrl: data.voiceUrl,
+          voiceKey: data.voiceKey || data.key || ""
+        };
 
       });
 
@@ -405,6 +408,9 @@ window.firebaseDB = {
           data.voiceUrl ||
           "",
 
+        voiceKey:
+          data.voiceKey ||
+          "",
         voiceMimeType:
           data.voiceMimeType ||
           "",
@@ -475,6 +481,9 @@ window.firebaseDB = {
           data.voiceUrl ||
           "",
 
+        voiceKey:
+          data.voiceKey ||
+          "",
         voiceMimeType:
           data.voiceMimeType ||
           "",
@@ -597,6 +606,9 @@ window.firebaseDB = {
           data.voiceUrl ||
           "",
 
+        voiceKey:
+          data.voiceKey ||
+          "",
         voiceMimeType:
           data.voiceMimeType ||
           "",
@@ -765,6 +777,9 @@ window.firebaseDB = {
           data.voiceUrl ||
           "",
 
+        voiceKey:
+          data.voiceKey ||
+          "",
         voiceMimeType:
           data.voiceMimeType ||
           "",
@@ -990,6 +1005,7 @@ window.firebaseDB = {
   // R2 upload state. The payment flow is locked until this is complete.
   let voiceUploadPromise = null;
   let voiceUploadUrl = "";
+  let voiceUploadKey = "";
   let voiceUploadFailed = false;
   let voiceUploadGeneration = 0;
 
@@ -1089,12 +1105,23 @@ window.firebaseDB = {
         fileName,
         mime
       )
-      .then(url => {
+      .then(result => {
+        const url =
+          typeof result === "string"
+            ? result
+            : result?.voiceUrl || "";
+
+        const key =
+          typeof result === "object"
+            ? result?.voiceKey || ""
+            : "";
+
         if (uploadGeneration !== voiceUploadGeneration) {
-          return url;
+          return result;
         }
 
         voiceUploadUrl = url;
+        voiceUploadKey = key;
         voiceUploadFailed = false;
 
         setUploadStatus(
@@ -1172,6 +1199,7 @@ window.firebaseDB = {
     voiceUploadGeneration++;
     voiceUploadPromise = null;
     voiceUploadUrl = "";
+    voiceUploadKey = "";
     voiceUploadFailed = false;
 
 
@@ -2083,6 +2111,7 @@ window.firebaseDB = {
         voiceUploadUrl
       ) {
         STATE.activeSubmission.voiceUrl = voiceUploadUrl;
+        STATE.activeSubmission.voiceKey = voiceUploadKey;
         STATE.activeSubmission.voiceStatus = "pending";
         STATE.activeSubmission.voiceEnabled = true;
         STATE.activeSubmission.voiceMimeType = voiceMimeType;
