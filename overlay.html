@@ -29,24 +29,11 @@ function ensureRecordedVoiceOutput(){
   try{
     const A=window.AudioContext||window.webkitAudioContext;
     if(!A)return null;
-    if(!recordedVoiceAudioContext){
-      recordedVoiceAudioContext=new A();
-    }
-    if(recordedVoiceAudioContext.state==="suspended"){
-      recordedVoiceAudioContext.resume().catch(()=>{});
-    }
-    const player=document.getElementById("recorded-voice-player");
-    if(player&&!recordedVoiceSource){
-      recordedVoiceSource=recordedVoiceAudioContext.createMediaElementSource(player);
-      const gain=recordedVoiceAudioContext.createGain();
-      gain.gain.value=1;
-      recordedVoiceSource.connect(gain);
-      gain.connect(recordedVoiceAudioContext.destination);
-      player.__payuuVoiceGain=gain;
-    }
+    if(!recordedVoiceAudioContext)recordedVoiceAudioContext=new A();
+    if(recordedVoiceAudioContext.state==="suspended")recordedVoiceAudioContext.resume().catch(()=>{});
     return recordedVoiceAudioContext;
   }catch(e){
-    console.error("Recorded voice audio routing unavailable:",e);
+    console.error("Recorded voice AudioContext unavailable:",e);
     return null;
   }
 }
@@ -55,68 +42,60 @@ async function playRecordedVoice(item,onDone){
   const done=typeof onDone==="function"?onDone:()=>{};
   const key=String(item?.voiceKey||"").trim();
   const legacyUrl=String(item?.voiceUrl||"").trim();
-  const url=key
-    ? "/api/play-voice?key="+encodeURIComponent(key)
-    : legacyUrl;
-
+  const url=key?"/api/play-voice?key="+encodeURIComponent(key):legacyUrl;
   if(!url){
     console.warn("Original voice missing voiceKey/voiceUrl",item);
     done();
     return false;
   }
 
-  const finishOnce=(()=>{
-    let finished=false;
-    return ()=>{
-      if(finished)return;
-      finished=true;
-      done();
-    };
-  })();
-
-  const player=document.getElementById("recorded-voice-player");
-  if(!player){
-    console.error("Recorded voice player is missing");
-    finishOnce();
-    return false;
-  }
+  let finished=false;
+  const finish=()=>{
+    if(finished)return;
+    finished=true;
+    try{if(recordedVoiceSource)recordedVoiceSource.stop()}catch(_){}
+    recordedVoiceSource=null;
+    done();
+  };
 
   try{
     const ctx=ensureRecordedVoiceOutput();
-    if(ctx&&ctx.state==="suspended"){
-      try{await ctx.resume();}catch(e){
-        console.warn("Recorded voice AudioContext resume blocked:",e);
-      }
+    if(!ctx){
+      console.error("No AudioContext available for recorded voice");
+      finish();
+      return false;
+    }
+    if(ctx.state==="suspended"){
+      try{await ctx.resume();}catch(e){console.warn("AudioContext resume failed:",e)}
     }
 
-    player.pause();
-    player.currentTime=0;
-    player.src=url;
-    player.volume=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
-    player.onended=finishOnce;
-    player.onerror=()=>{
-      console.error("Recorded voice media error",{key:key||"legacy-url",url});
-      finishOnce();
-    };
-    player.load();
+    // Fetch and decode the R2 audio ourselves. This avoids the browser's
+    // HTMLMediaElement autoplay gate that was preventing the voice after TTS.
+    const response=await fetch(url,{cache:"no-store",credentials:"same-origin"});
+    if(!response.ok)throw new Error("Voice fetch failed: HTTP "+response.status);
+    const arrayBuffer=await response.arrayBuffer();
+    const audioBuffer=await ctx.decodeAudioData(arrayBuffer.slice(0));
 
-    const p=player.play();
-    if(p&&typeof p.catch==="function"){
-      await p.catch(err=>{
-        console.error("Recorded voice media playback blocked:",{
-          name:err?.name,
-          message:err?.message,
-          key:key||"legacy-url"
-        });
-        throw err;
-      });
-    }
+    if(ctx.state==="suspended")await ctx.resume().catch(()=>{});
+    const source=ctx.createBufferSource();
+    const gain=ctx.createGain();
+    gain.gain.value=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
+    source.buffer=audioBuffer;
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    recordedVoiceSource=source;
+    source.onended=finish;
 
-    console.log("Recorded supporter voice started",{key:key||"legacy-url",url,contextState:ctx?.state||"no-web-audio"});
+    source.start(0);
+    console.log("Recorded supporter voice started",{
+      key:key||"legacy-url",
+      duration:audioBuffer.duration,
+      contextState:ctx.state
+    });
     return true;
   }catch(e){
-    console.error("Recorded supporter voice playback failed:",e,url);
-    finishOnce();
+    console.error("Recorded supporter voice playback failed:",e,{key:key||"legacy-url",url});
+    finish();
     return false;
   }
 }
