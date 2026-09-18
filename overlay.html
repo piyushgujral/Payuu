@@ -165,7 +165,7 @@ async function playRecordedVoice(item,onDone){
   }
 }
 function playAlertSpeech(item,onDone){const msg=cleanSpeechText(item?.msg),done=typeof onDone==='function'?onDone:()=>{};speak(buildIntro(item),()=>{if(msg)speak(`Message: ${msg}`,done);else done()});}
-async function showNormalAlert(item,key){
+async async function showNormalAlert(item,key){
   if(!item||item.eventType==="engagement")return;
   const id=String(key||item.id||"");
   if(id&&displayedSuperChats.has(id))return;
@@ -194,13 +194,10 @@ async function showNormalAlert(item,key){
     }
   }
 }
-function showNormalAlertCard(item){const card=document.getElementById("alert-card");if(!card)return;document.getElementById("alert-name").textContent=item.name||"A Supporter";document.getElementById("alert-amount").textContent=`₹${Number(item.amount||0).toLocaleString("en-IN")}`;document.getElementById("alert-message").textContent=item.msg||"";card.classList.add("active");const duration=Math.max(3,Math.min(30,Number(siteSettings.overlay?.duration||8)));setTimeout(()=>card.classList.remove("active"),duration*1000);if(String(item.voiceKey||item.voiceUrl||"").trim()){
-  // Play the creator's original recording independently of browser TTS.
-  // TTS starts after the recording finishes so the two audio streams never overlap.
-  playRecordedVoice(item,()=>playAlertSpeech(item));
-}else{
-  playAlertSpeech(item);
-}}
+function showNormalAlertCard(item){const card=document.getElementById("alert-card");if(!card)return;document.getElementById("alert-name").textContent=item.name||"A Supporter";document.getElementById("alert-amount").textContent=`₹${Number(item.amount||0).toLocaleString("en-IN")}`;document.getElementById("alert-message").textContent=item.msg||"";card.classList.add("active");
+  const duration=Math.max(3,Math.min(30,Number(siteSettings.overlay?.duration||8)));
+  setTimeout(()=>card.classList.remove("active"),duration*1000);
+}
 function startSuperChatListener(){
   if(superChatListenerStarted||!window.firebaseDB?.listenOverlay)return;
   superChatListenerStarted=true;
