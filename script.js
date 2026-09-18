@@ -769,44 +769,84 @@ function fileToBase64(file) {
 }
 
 let pendingAdminVoicePlayer = null;
+let pendingAdminVoiceUrl = '';
+
+function getAdminVoiceUrl(item) {
+    const key = String(item?.voiceKey || '').trim();
+    const url = String(item?.voiceUrl || '').trim();
+
+    // Current R2 recordings: use the same-origin endpoint immediately.
+    if (key && !/^gs:\/\//i.test(key) && !/^https?:\/\//i.test(key) && !/^superchat-voice\//i.test(key)) {
+        return '/api/play-voice?key=' + encodeURIComponent(key);
+    }
+
+    // Existing direct HTTP URLs can be played immediately.
+    if (/^https?:\/\//i.test(url)) return url;
+    if (/^https?:\/\//i.test(key)) return key;
+
+    return url || key;
+}
+
 async function playPendingVoice(index) {
     const item = STATE.pendingQueue[index];
     if (!item) return;
 
-    let url = String(item.voiceUrl || '').trim();
-    const key = String(item.voiceKey || '').trim();
+    // IMPORTANT: start playback directly from the button click before doing
+    // any async Firebase Storage resolution. This preserves browser/Chrome
+    // user-gesture permission for audio playback.
+    const immediateUrl = getAdminVoiceUrl(item);
 
     try {
-        if (url && !/^https?:\/\//i.test(url) && window.firebase?.storage) {
-            url = /^gs:\/\//i.test(url)
-                ? await firebase.storage().refFromURL(url).getDownloadURL()
-                : await firebase.storage().ref(url.replace(/^\/+/, '')).getDownloadURL();
+        if (pendingAdminVoicePlayer) {
+            pendingAdminVoicePlayer.pause();
+            pendingAdminVoicePlayer.currentTime = 0;
         }
 
-        if (!url && key) {
-            if (/^https?:\/\//i.test(key)) {
-                url = key;
-            } else if (/^gs:\/\//i.test(key) && window.firebase?.storage) {
-                url = await firebase.storage().refFromURL(key).getDownloadURL();
-            } else if (/^superchat-voice\//i.test(key) && window.firebase?.storage) {
-                url = await firebase.storage().ref(key).getDownloadURL();
-            } else {
-                url = '/api/play-voice?key=' + encodeURIComponent(key);
-            }
-        }
-
-        if (!url) throw new Error('No voice recording reference found.');
-
-        if (pendingAdminVoicePlayer) pendingAdminVoicePlayer.pause();
-
-        const audio = new Audio(url);
+        const audio = pendingAdminVoicePlayer || new Audio();
         pendingAdminVoicePlayer = audio;
         audio.preload = 'auto';
+        audio.controls = false;
         audio.volume = 1;
+        audio.muted = false;
+
+        if (immediateUrl && !/^gs:\/\//i.test(immediateUrl) && !/^superchat-voice\//i.test(immediateUrl)) {
+            if (audio.src !== new URL(immediateUrl, location.href).href) {
+                audio.src = immediateUrl;
+                audio.load();
+            }
+
+            const playPromise = audio.play();
+            if (playPromise && typeof playPromise.then === 'function') {
+                await playPromise;
+            }
+            pendingAdminVoiceUrl = audio.src;
+            return;
+        }
+
+        // Legacy Firebase Storage recording. Resolve it only when required.
+        let resolvedUrl = '';
+        const refValue = String(item.voiceUrl || item.voiceKey || '').trim();
+
+        if (window.firebase?.storage && refValue) {
+            const ref = /^gs:\/\//i.test(refValue)
+                ? firebase.storage().refFromURL(refValue)
+                : firebase.storage().ref(refValue.replace(/^\/+/, ''));
+            resolvedUrl = await ref.getDownloadURL();
+        }
+
+        if (!resolvedUrl) throw new Error('No playable voice recording found.');
+
+        audio.src = resolvedUrl;
+        audio.load();
         await audio.play();
+        pendingAdminVoiceUrl = resolvedUrl;
     } catch (error) {
-        console.error('PAYUU ADMIN VOICE PLAYBACK FAILED', { item, error: error?.message || String(error) });
-        alert('Voice playback failed. Check the browser console for the recording reference/error.');
+        console.error('PAYUU ADMIN VOICE PLAYBACK FAILED', {
+            item,
+            url: immediateUrl,
+            error: error?.message || String(error)
+        });
+        alert('Voice could not be played in the approval panel. The same recording can still be played after approval if the file is available.');
     }
 }
 
