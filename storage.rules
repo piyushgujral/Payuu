@@ -6,7 +6,9 @@ service firebase.storage {
     // Firebase Storage path closed so it cannot become an unbounded public
     // upload surface.
     match /superchat-voice/{fileName} {
-      allow read, write: if false;
+      allow read: if true;
+      // Legacy voice recordings remain read-only for playback.
+      allow create, update, delete: if false;
     }
 
     match /engagement-assets/{fileName} {
