@@ -17,6 +17,7 @@
         blob: null,
         objectUrl: '',
         voiceUrl: '',
+        voiceKey: '',
         mimeType: '',
         duration: 0,
         startedAt: 0,
@@ -231,6 +232,7 @@
 
         state.uploading = true;
         state.voiceUrl = '';
+        state.voiceKey = '';
         setStatus('Uploading voice message…');
 
         try {
@@ -242,11 +244,14 @@
             });
 
             const data = await response.json().catch(() => ({}));
-            if (!response.ok || !data.voiceUrl) {
+            if (!response.ok || !(data.voiceKey || data.key || data.voiceUrl)) {
                 throw new Error(data.error || `Upload failed (${response.status})`);
             }
 
-            state.voiceUrl = data.voiceUrl;
+            state.voiceKey = data.voiceKey || data.key || '';
+            state.voiceUrl = state.voiceKey
+                ? '/api/play-voice?key=' + encodeURIComponent(state.voiceKey)
+                : data.voiceUrl;
             state.uploading = false;
             setStatus('✓ Voice uploaded. Payment is ready.');
         } catch (error) {
@@ -271,6 +276,7 @@
         state.chunks = [];
         state.blob = null;
         state.voiceUrl = '';
+        state.voiceKey = '';
         state.mimeType = '';
         state.duration = 0;
         state.startedAt = 0;
@@ -307,6 +313,7 @@
                 data = {
                     ...data,
                     voiceUrl: voice.voiceUrl,
+                    voiceKey: voice.voiceKey,
                     voiceMimeType: voice.voiceMimeType,
                     voiceDuration: voice.voiceDuration,
                     voiceStatus: voice.voiceStatus,
