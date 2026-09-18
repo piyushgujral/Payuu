@@ -146,7 +146,15 @@ function playDingSound() {
 
 function applySettingsToUI(s) {
     if (!s) return;
-    STATE.settings = { ...DEFAULT_SETTINGS, ...s };
+    STATE.settings = {
+        ...DEFAULT_SETTINGS,
+        ...s,
+        socials: { ...DEFAULT_SETTINGS.socials, ...(s.socials || {}) },
+        overlay: { ...DEFAULT_SETTINGS.overlay, ...(s.overlay || {}) },
+        voice: { ...DEFAULT_SETTINGS.voice, ...(s.voice || {}) },
+        emailNotifications: { ...DEFAULT_SETTINGS.emailNotifications, ...(s.emailNotifications || {}) },
+        homeTexts: { ...DEFAULT_SETTINGS.homeTexts, ...(s.homeTexts || {}) }
+    };
     const cfg = STATE.settings;
 
     document.getElementById('page-title').textContent = `${cfg.websiteName} | Official Creator Support Hub`;
@@ -210,25 +218,25 @@ function applySettingsToUI(s) {
     if (cfg.socials) {
         const k = cfg.socials;
         if (k.kick) {
-            document.getElementById('nav-link-kick').href = k.kick;
-            document.getElementById('foot-link-kick').href = k.kick;
-            document.getElementById('social-card-kick').href = k.kick;
-            document.getElementById('btn-kick-sidebar').href = k.kick;
+            document.getElementById('nav-link-kick').href = safeHttpUrl(k.kick) || '#';
+            document.getElementById('foot-link-kick').href = safeHttpUrl(k.kick) || '#';
+            document.getElementById('social-card-kick').href = safeHttpUrl(k.kick) || '#';
+            document.getElementById('btn-kick-sidebar').href = safeHttpUrl(k.kick) || '#';
         }
         if (k.instagram) {
-            document.getElementById('nav-link-insta').href = k.instagram;
-            document.getElementById('foot-link-insta').href = k.instagram;
-            document.getElementById('social-card-insta').href = k.instagram;
+            document.getElementById('nav-link-insta').href = safeHttpUrl(k.instagram) || '#';
+            document.getElementById('foot-link-insta').href = safeHttpUrl(k.instagram) || '#';
+            document.getElementById('social-card-insta').href = safeHttpUrl(k.instagram) || '#';
         }
         if (k.youtube) {
-            document.getElementById('nav-link-yt').href = k.youtube;
-            document.getElementById('foot-link-yt').href = k.youtube;
-            document.getElementById('social-card-yt').href = k.youtube;
+            document.getElementById('nav-link-yt').href = safeHttpUrl(k.youtube) || '#';
+            document.getElementById('foot-link-yt').href = safeHttpUrl(k.youtube) || '#';
+            document.getElementById('social-card-yt').href = safeHttpUrl(k.youtube) || '#';
         }
         if (k.discord) {
-            document.getElementById('nav-link-discord').href = k.discord;
-            document.getElementById('foot-link-discord').href = k.discord;
-            document.getElementById('social-card-discord').href = k.discord;
+            document.getElementById('nav-link-discord').href = safeHttpUrl(k.discord) || '#';
+            document.getElementById('foot-link-discord').href = safeHttpUrl(k.discord) || '#';
+            document.getElementById('social-card-discord').href = safeHttpUrl(k.discord) || '#';
         }
     }
 
@@ -490,7 +498,7 @@ function renderApprovedAdminList() {
                     <div class="admin-avatar" style="border-color: #10B981; color: #10B981;">${firstLetter}</div>
                     <div>
                         <div class="admin-name">${item.pinned ? '📌 ' : ''}${escapeHtml(item.name)}</div>
-                        <div class="admin-time"><i class="fa-solid fa-calendar-day"></i> ${dateFormatted} ${timeFormatted}</div>
+                        <div class="admin-time"><i class="fa-solid fa-calendar-day"></i> ${escapeHtml(dateFormatted)} ${escapeHtml(timeFormatted)}</div>
                     </div>
                 </div>
                 <div class="status-pill" style="background: rgba(16, 185, 129, 0.18); color: #10B981; border: 1px solid #10B981;">APPROVED</div>
@@ -1145,6 +1153,25 @@ function escapeHtml(text) {
     return text ? text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) : '';
 }
 
+function safeHttpUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    try {
+        const url = new URL(raw, window.location.origin);
+        return (url.protocol === 'http:' || url.protocol === 'https:') ? url.href : '';
+    } catch (_) {
+        return '';
+    }
+}
+
+function clampAmount(value) {
+    const n = Number(value);
+    const min = Number(STATE.settings?.minAmount ?? DEFAULT_SETTINGS.minAmount);
+    const max = Number(STATE.settings?.maxAmount ?? DEFAULT_SETTINGS.maxAmount);
+    if (!Number.isFinite(n) || n < min || n > max) return null;
+    return Math.round(n * 100) / 100;
+}
+
 function initGoldenParticles() {
     const canvas = document.getElementById('particle-canvas');
     if (!canvas) return;
@@ -1747,8 +1774,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const nameInput = document.getElementById('supporter-name');
             const msgInput = document.getElementById('supporter-message');
 
-            const name = nameInput ? nameInput.value.trim() : '';
-            const msg = msgInput ? msgInput.value.trim() : '';
+            const name = nameInput ? nameInput.value.trim().slice(0, 80) : '';
+            const msg = msgInput ? msgInput.value.trim().slice(0, 150) : '';
             const amount = STATE.selectedAmount;
             const minAmt = STATE.settings.minAmount || 40;
 
