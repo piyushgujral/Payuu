@@ -1,11 +1,19 @@
 import {
   S3Client,
   PutObjectCommand,
-  GetObjectCommand,
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+  } from "@aws-sdk/client-s3";
 
 const MAX_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = new Map([
+  ["audio/webm", "webm"],
+  ["audio/ogg", "ogg"],
+  ["audio/opus", "ogg"],
+  ["audio/mp4", "m4a"],
+  ["audio/x-m4a", "m4a"],
+  ["audio/wav", "wav"],
+  ["audio/wave", "wav"],
+  ["audio/mpeg", "mp3"],
+]);
 
 const s3 = new S3Client({
   region: "auto",
@@ -60,8 +68,16 @@ export default async function handler(req, res) {
       .trim()
       .toLowerCase();
 
-    if (!contentType.startsWith("audio/")) {
-      return res.status(400).json({ error: "Only audio files are allowed" });
+    const extension = ALLOWED_TYPES.get(contentType);
+    if (!extension) {
+      return res.status(400).json({
+        error: "Unsupported audio format. Use WebM, OGG, M4A, WAV or MP3."
+      });
+    }
+
+    const declaredLength = Number(req.headers["content-length"] || 0);
+    if (declaredLength > MAX_SIZE) {
+      return res.status(413).json({ error: "Voice recording is too large" });
     }
 
     const audioBuffer = await getAudioBuffer(req);
@@ -74,12 +90,6 @@ export default async function handler(req, res) {
       return res.status(413).json({ error: "Voice recording is too large" });
     }
 
-    const extension = contentType.includes("mp4")
-      ? "mp4"
-      : contentType.includes("ogg")
-      ? "ogg"
-      : "webm";
-
     const key = `voice/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
 
     await s3.send(
@@ -91,20 +101,13 @@ export default async function handler(req, res) {
       })
     );
 
-    const url = await getSignedUrl(
-      s3,
-      new GetObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME,
-        Key: key,
-      }),
-      { expiresIn: 604800 }
-    );
-
+    // Never return a bearer/signed R2 URL. The app stores only this opaque key
+    // and plays it through the same-origin /api/play-voice endpoint.
     return res.status(200).json({
       success: true,
-      voiceUrl: url,
       voiceKey: key,
       key,
+      voiceUrl: "/api/play-voice?key=" + encodeURIComponent(key),
     });
   } catch (error) {
     console.error("R2 voice upload error:", error);
