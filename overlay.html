@@ -122,7 +122,7 @@ async function playRecordedVoice(item,onDone){
 }
 
 function playAlertSpeech(item,onDone){const msg=cleanSpeechText(item?.msg),done=typeof onDone==='function'?onDone:()=>{};speak(buildIntro(item),()=>{if(msg)speak(`Message: ${msg}`,done);else done()});}
-async async function showNormalAlert(item,key){
+async function showNormalAlert(item,key){
   if(!item||item.eventType==="engagement")return;
   const id=String(key||item.id||"");
   if(id&&displayedSuperChats.has(id))return;
