@@ -173,7 +173,7 @@ window.firebaseDB = {
       id: newRef.key,
 
       adminEmail:
-        auditData.adminEmail ||
+        auth.currentUser?.email ||
         "System",
 
       action:
@@ -367,9 +367,13 @@ window.firebaseDB = {
 
         }
 
+        const voiceKey = data.voiceKey || data.key || "";
+        if (!voiceKey) {
+          throw new Error("Voice upload completed without a voice key.");
+        }
         return {
-          voiceUrl: data.voiceUrl,
-          voiceKey: data.voiceKey || data.key || ""
+          voiceKey,
+          voiceUrl: "/api/play-voice?key=" + encodeURIComponent(voiceKey)
         };
 
       });
@@ -495,7 +499,7 @@ window.firebaseDB = {
           ),
 
         voiceStatus:
-          data.voiceUrl
+          data.voiceKey
             ? "approved"
             : (
                 data.voiceStatus ||
@@ -643,16 +647,13 @@ window.firebaseDB = {
 
       return approvedRef
         .set(duplicatePayload)
-        .then(() => {
-
+        .then(() =>
           this.pushOverlayAlert(
             duplicatePayload,
             approvedRef.key
-          );
-
-          return approvedRef.key;
-
-        });
+          )
+        )
+        .then(() => approvedRef.key);
 
     },
 
@@ -793,7 +794,7 @@ window.firebaseDB = {
         voiceStatus:
           data.voiceStatus ||
           (
-            data.voiceUrl
+            data.voiceKey
               ? "approved"
               : "none"
           ),
@@ -1130,7 +1131,10 @@ window.firebaseDB = {
         );
 
         setPaymentLocked(false);
-        return url;
+        return {
+          voiceUrl: url,
+          voiceKey: key
+        };
       })
       .catch(error => {
         if (uploadGeneration !== voiceUploadGeneration) {
@@ -2111,7 +2115,10 @@ window.firebaseDB = {
         STATE.activeSubmission &&
         voiceUploadUrl
       ) {
-        STATE.activeSubmission.voiceUrl = voiceUploadUrl;
+        STATE.activeSubmission.voiceUrl =
+          voiceUploadKey
+            ? "/api/play-voice?key=" + encodeURIComponent(voiceUploadKey)
+            : "";
         STATE.activeSubmission.voiceKey = voiceUploadKey;
         STATE.activeSubmission.voiceStatus = "pending";
         STATE.activeSubmission.voiceEnabled = true;
