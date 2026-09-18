@@ -38,158 +38,102 @@ function ensureRecordedVoiceOutput(){
   }
 }
 
-function prepareRecordedVoice(item){
+async function resolveRecordedVoiceUrl(item){
+  const key=String(item?.voiceKey||"").trim();
+  const legacyUrl=String(item?.voiceUrl||"").trim();
+  if(key && !/^gs:\/\//i.test(key) && !/^https?:\/\//i.test(key) && !/^superchat-voice\//i.test(key)){
+    return "/api/play-voice?key="+encodeURIComponent(key);
+  }
+  const refValue=key||legacyUrl;
+  if(/^https?:\/\//i.test(refValue)) return refValue;
+  if(window.firebase?.storage && refValue){
+    try{
+      const ref=/^gs:\/\//i.test(refValue)
+        ? firebase.storage().refFromURL(refValue)
+        : firebase.storage().ref(refValue.replace(/^\/+/, ""));
+      return await ref.getDownloadURL();
+    }catch(e){
+      console.warn("PAYUU VOICE: legacy storage resolution failed",e);
+    }
+  }
+  return legacyUrl;
+}
+
+async function prepareRecordedVoice(item){
   try{
-    const key=String(item?.voiceKey||"").trim();
-    const legacyUrl=String(item?.voiceUrl||"").trim();
-    let url=key?"/api/play-voice?key="+encodeURIComponent(key):legacyUrl;
-    if(!url)return;
+    const url=await resolveRecordedVoiceUrl(item);
+    if(!url)return "";
     const player=document.getElementById("recorded-voice-player");
-    if(!player)return;
+    if(!player)return url;
     player.pause();
-    player.onended=null;
     player.onerror=null;
+    player.onended=null;
     player.src=url;
     player.preload="auto";
     player.load();
+    return url;
   }catch(e){
     console.warn("PAYUU VOICE: preloading failed",e);
+    return "";
   }
 }
 
 async function playRecordedVoice(item,onDone){
   const done=typeof onDone==="function"?onDone:()=>{};
-  const key=String(item?.voiceKey||"").trim();
-  const legacyUrl=String(item?.voiceUrl||"").trim();
-
-  // New recordings use Cloudflare R2 voice keys. Older recordings may have
-  // a Firebase Storage path in voiceKey/voiceUrl. Resolve those legacy
-  // references before falling back to the R2 endpoint.
-  let url="";
-  try{
-    if(key && (/^gs:\/\//i.test(key)||/^https?:\/\//i.test(key)||/^superchat-voice\//i.test(key))){
-      if(/^https?:\/\//i.test(key)){
-        url=key;
-      }else if(window.firebase?.storage){
-        const ref=firebase.storage().refFromURL(/^gs:\/\//i.test(key)?key:key);
-        url=await ref.getDownloadURL();
-      }
-    }
-    if(!url && legacyUrl){
-      if(/^https?:\/\//i.test(legacyUrl)){
-        url=legacyUrl;
-      }else if(window.firebase?.storage){
-        try{
-          const ref=/^gs:\/\//i.test(legacyUrl)
-            ? firebase.storage().refFromURL(legacyUrl)
-            : firebase.storage().ref(legacyUrl.replace(/^\/+/, ""));
-          url=await ref.getDownloadURL();
-        }catch(pathError){
-          console.warn("PAYUU VOICE: legacy voice path could not be resolved",{
-            legacyUrl,message:pathError?.message
-          });
-        }
-      }
-    }
-    if(!url && key){
-      url="/api/play-voice?key="+encodeURIComponent(key);
-    }
-  }catch(legacyError){
-    console.warn("PAYUU VOICE: legacy Firebase Storage URL resolution failed",{
-      key,message:legacyError?.message
-    });
-    if(legacyUrl)url=legacyUrl;
-    else if(key && !/^superchat-voice\//i.test(key))url="/api/play-voice?key="+encodeURIComponent(key);
-  }
-
-  if(!url){
-    console.error("PAYUU VOICE: no playable voice reference on overlay item",item);
-    done();
-    return false;
-  }
-
   let finished=false;
-  const finish=()=>{
-    if(finished)return;
-    finished=true;
-    done();
-  };
-
-  console.log("PAYUU VOICE: attempting recorded playback",{key,url,mime:item?.voiceMimeType,duration:item?.voiceDuration});
-
-  // First use a plain audio element. This is the most reliable path in
-  // OBS Browser Source/Chromium after speechSynthesis has finished.
-  const player=document.getElementById("recorded-voice-player");
-  if(!player){
-    console.error("PAYUU VOICE: audio element missing");
-    finish();
-    return false;
-  }
+  const finish=()=>{if(finished)return;finished=true;done();};
 
   try{
-    player.pause();
-    player.removeAttribute("src");
-    player.load();
-    player.src=url;
+    const url=await resolveRecordedVoiceUrl(item);
+    if(!url)throw new Error("No voice recording reference found.");
+
+    const player=document.getElementById("recorded-voice-player");
+    if(!player)throw new Error("Audio element missing.");
+
+    // Reuse the URL preloaded while TTS was speaking. This avoids a second
+    // network/load cycle at the exact moment the TTS finishes.
+    if(player.src!==new URL(url,location.href).href){
+      player.src=url;
+      player.preload="auto";
+      player.load();
+    }
+
     player.volume=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
     player.muted=false;
     player.autoplay=false;
     player.onended=finish;
-    player.onerror=()=>{
-      const mediaError=player.error;
-      console.error("PAYUU VOICE: HTML audio error",{
-        code:mediaError?.code,
-        message:mediaError?.message,
-        networkState:player.networkState,
-        readyState:player.readyState,
-        url
-      });
-    };
-    player.load();
+    player.onerror=()=>finish();
 
-    // The voice is preloaded while TTS is running, so playback can begin
-    // immediately when TTS ends. Do not add an artificial delay here.
     const p=player.play();
-    if(p&&typeof p.then==="function"){
-      await p;
+    if(p&&typeof p.then==="function")await p;
+    console.log("PAYUU VOICE: playback started",{key:item?.voiceKey||"",url});
+    return true;
+  }catch(e){
+    console.warn("PAYUU VOICE: HTML playback failed, trying Web Audio",e);
+
+    try{
+      const url=await resolveRecordedVoiceUrl(item);
+      const ctx=ensureRecordedVoiceOutput();
+      if(!ctx)throw e;
+      if(ctx.state==="suspended")await ctx.resume();
+      const response=await fetch(url,{cache:"no-store",credentials:"same-origin"});
+      if(!response.ok)throw new Error("Voice fetch HTTP "+response.status);
+      const audioBuffer=await ctx.decodeAudioData(await response.arrayBuffer());
+      const source=ctx.createBufferSource();
+      const gain=ctx.createGain();
+      gain.gain.value=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
+      source.buffer=audioBuffer;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.onended=finish;
+      source.start(0);
+      console.log("PAYUU VOICE: Web Audio fallback started",{duration:audioBuffer.duration});
+      return true;
+    }catch(fallbackError){
+      console.error("PAYUU VOICE: playback failed",fallbackError);
+      finish();
+      return false;
     }
-    console.log("PAYUU VOICE: HTML audio playback started",{key});
-    return true;
-  }catch(htmlError){
-    console.warn("PAYUU VOICE: HTML audio playback failed; trying Web Audio",{
-      name:htmlError?.name,message:htmlError?.message,key
-    });
-  }
-
-  // Fallback: decode the same R2 response and play it through AudioContext.
-  try{
-    const ctx=ensureRecordedVoiceOutput();
-    if(!ctx)throw new Error("AudioContext unavailable");
-    if(ctx.state==="suspended")await ctx.resume();
-
-    const response=await fetch(url,{cache:"no-store",credentials:"same-origin"});
-    if(!response.ok)throw new Error("Voice fetch HTTP "+response.status);
-    const buffer=await response.arrayBuffer();
-    const audioBuffer=await ctx.decodeAudioData(buffer.slice(0));
-
-    const source=ctx.createBufferSource();
-    const gain=ctx.createGain();
-    gain.gain.value=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
-    source.buffer=audioBuffer;
-    source.connect(gain);
-    gain.connect(ctx.destination);
-    source.onended=finish;
-    source.start(0);
-
-    console.log("PAYUU VOICE: Web Audio fallback started",{key,duration:audioBuffer.duration});
-    return true;
-  }catch(webAudioError){
-    console.error("PAYUU VOICE: BOTH playback methods failed",{
-      key,url,
-      error:webAudioError?.message||String(webAudioError)
-    });
-    finish();
-    return false;
   }
 }
 function playAlertSpeech(item,onDone){const msg=cleanSpeechText(item?.msg),done=typeof onDone==='function'?onDone:()=>{};speak(buildIntro(item),()=>{if(msg)speak(`Message: ${msg}`,done);else done()});}
