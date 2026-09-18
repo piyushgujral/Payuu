@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Payuu Live | Browser Stream Overlay</title><script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script><style>:root{--gold-primary:#FFD700;--gold-glow:rgba(255,215,0,.6);--gold-grad:linear-gradient(135deg,#FFE866 0%,#FFA800 100%);--cyan-neon:#00F0FF;--white:#FFF;--font-display:'Orbitron',sans-serif;--font-body:'Poppins',sans-serif}*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:transparent!important;overflow:hidden;font-family:var(--font-body);display:flex;align-items:center;justify-content:center}#overlay-stage{position:relative;width:100%;max-width:580px;padding:20px;display:flex;align-items:center;justify-content:center}.alert-card{background:rgba(7,25,47,.92);border:2px solid var(--gold-primary);border-radius:24px;padding:28px;width:100%;text-align:center;box-shadow:0 0 35px var(--gold-glow),inset 0 0 15px rgba(255,215,0,.2);backdrop-filter:blur(16px);position:relative;overflow:hidden;opacity:0;transform:translateY(100px) scale(.8);pointer-events:none;transition:all .6s cubic-bezier(.34,1.56,.64,1)}.alert-card.active{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}.alert-card:before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,215,0,.15),transparent);transform:rotate(45deg);animation:sweepGlow 3s infinite linear;pointer-events:none}@keyframes sweepGlow{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}.logo-aura-wrapper{position:relative;width:110px;height:110px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}.gold-ring-spin{position:absolute;width:100%;height:100%;border-radius:50%;border:3px dashed var(--gold-primary);box-shadow:0 0 20px var(--gold-glow);animation:spinRing 10s linear infinite}@keyframes spinRing{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}.alert-logo-img{width:82%;height:82%;border-radius:50%;object-fit:cover;border:3px solid var(--gold-primary);box-shadow:0 0 25px var(--gold-glow);z-index:2}.supporter-header{font-family:var(--font-display);font-size:1.8rem;font-weight:900;color:var(--white);letter-spacing:1.5px;margin-bottom:6px;text-shadow:0 0 12px rgba(255,255,255,.4);position:relative;z-index:3}.amount-banner-pill{display:inline-block;background:var(--gold-grad);color:#030B17;font-family:var(--font-display);font-size:1.6rem;font-weight:900;padding:6px 24px;border-radius:30px;box-shadow:0 0 25px var(--gold-glow);margin-bottom:14px;letter-spacing:1px;position:relative;z-index:3}.message-speech-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.3);border-radius:16px;padding:12px 18px;color:var(--white);font-size:1rem;font-weight:500;margin-bottom:14px;word-break:break-word;line-height:1.4;position:relative;z-index:3}.thankyou-footer{font-size:.82rem;color:var(--cyan-neon);font-weight:700;letter-spacing:1px;text-transform:uppercase;position:relative;z-index:3}.voice-player{position:absolute;left:-99999px;width:1px;height:1px;opacity:0}</style></head><body><div id="overlay-stage"><div class="alert-card" id="alert-card"><div class="logo-aura-wrapper"><div class="gold-ring-spin"></div><img src="assets/images/logo.png" alt="Payuu Live Logo" class="alert-logo-img" id="alert-logo"></div><div class="supporter-header" id="alert-name">GamerX</div><div class="amount-banner-pill" id="alert-amount">₹500</div><div class="message-speech-box" id="alert-message">"Keep up the awesome streams!"</div><div class="thankyou-footer">❤️ Thank you for supporting Payuu Live! ❤️</div></div></div><audio id="recorded-voice-player" class="voice-player" preload="auto"></audio>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Payuu Live | Browser Stream Overlay</title><script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script><style>:root{--gold-primary:#FFD700;--gold-glow:rgba(255,215,0,.6);--gold-grad:linear-gradient(135deg,#FFE866 0%,#FFA800 100%);--cyan-neon:#00F0FF;--white:#FFF;--font-display:'Orbitron',sans-serif;--font-body:'Poppins',sans-serif}*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:transparent!important;overflow:hidden;font-family:var(--font-body);display:flex;align-items:center;justify-content:center}#overlay-stage{position:relative;width:100%;max-width:580px;padding:20px;display:flex;align-items:center;justify-content:center}.alert-card{background:rgba(7,25,47,.92);border:2px solid var(--gold-primary);border-radius:24px;padding:28px;width:100%;text-align:center;box-shadow:0 0 35px var(--gold-glow),inset 0 0 15px rgba(255,215,0,.2);backdrop-filter:blur(16px);position:relative;overflow:hidden;opacity:0;transform:translateY(100px) scale(.8);pointer-events:none;transition:all .6s cubic-bezier(.34,1.56,.64,1)}.alert-card.active{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}.alert-card:before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,215,0,.15),transparent);transform:rotate(45deg);animation:sweepGlow 3s infinite linear;pointer-events:none}@keyframes sweepGlow{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}.logo-aura-wrapper{position:relative;width:110px;height:110px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}.gold-ring-spin{position:absolute;width:100%;height:100%;border-radius:50%;border:3px dashed var(--gold-primary);box-shadow:0 0 20px var(--gold-glow);animation:spinRing 10s linear infinite}@keyframes spinRing{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}.alert-logo-img{width:82%;height:82%;border-radius:50%;object-fit:cover;border:3px solid var(--gold-primary);box-shadow:0 0 25px var(--gold-glow);z-index:2}.supporter-header{font-family:var(--font-display);font-size:1.8rem;font-weight:900;color:var(--white);letter-spacing:1.5px;margin-bottom:6px;text-shadow:0 0 12px rgba(255,255,255,.4);position:relative;z-index:3}.amount-banner-pill{display:inline-block;background:var(--gold-grad);color:#030B17;font-family:var(--font-display);font-size:1.6rem;font-weight:900;padding:6px 24px;border-radius:30px;box-shadow:0 0 25px var(--gold-glow);margin-bottom:14px;letter-spacing:1px;position:relative;z-index:3}.message-speech-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.3);border-radius:16px;padding:12px 18px;color:var(--white);font-size:1rem;font-weight:500;margin-bottom:14px;word-break:break-word;line-height:1.4;position:relative;z-index:3}.thankyou-footer{font-size:.82rem;color:var(--cyan-neon);font-weight:700;letter-spacing:1px;text-transform:uppercase;position:relative;z-index:3}.voice-player{position:absolute;left:-99999px;width:1px;height:1px;opacity:0}</style></head><body><div id="overlay-stage"><div class="alert-card" id="alert-card"><div class="logo-aura-wrapper"><div class="gold-ring-spin"></div><img src="assets/images/logo.png" alt="Payuu Live Logo" class="alert-logo-img" id="alert-logo"></div><div class="supporter-header" id="alert-name">GamerX</div><div class="amount-banner-pill" id="alert-amount">₹500</div><div class="message-speech-box" id="alert-message">"Keep up the awesome streams!"</div><div class="thankyou-footer">❤️ Thank you for supporting Payuu Live! ❤️</div></div></div><audio id="recorded-voice-player" class="voice-player" preload="auto" playsinline></audio>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-storage-compat.js"></script><script src="firebase.js?v=20260910"></script><script src="js/engagement-overlay.js?v=20260910"></script><script>
 const overlayOpenedAt=Date.now();let superChatListenerStarted=false;const displayedSuperChats=new Set();let siteSettings={voice:{enabled:true,gender:"female",language:"en-IN",volume:.9,pitch:1,rate:1},overlay:{duration:8,volume:.9,sound:true,confetti:true}};let recordedVoiceAudioContext=null;let recordedVoiceSource=null;
 if(window.firebaseDB&&typeof window.firebaseDB.listenSettings==="function")window.firebaseDB.listenSettings(s=>{if(!s)return;siteSettings={...siteSettings,...s,voice:{...siteSettings.voice,...(s.voice||{})},overlay:{...siteSettings.overlay,...(s.overlay||{})}};if(s.logoUrl){const e=document.getElementById("alert-logo");if(e)e.src=s.logoUrl}});
@@ -56,82 +56,145 @@ async function playRecordedVoice(item,onDone){
     return false;
   }
 
-  try{
-    const ctx=ensureRecordedVoiceOutput();
-    if(!ctx){
-      throw new Error("AudioContext is not available");
-    }
-
-    if(ctx.state==="suspended"){
-      await ctx.resume().catch(()=>{});
-    }
-
-    const response=await fetch(url,{cache:"no-store"});
-    if(!response.ok){
-      throw new Error("Voice server returned HTTP "+response.status);
-    }
-
-    const arrayBuffer=await response.arrayBuffer();
-    if(!arrayBuffer.byteLength){
-      throw new Error("Voice recording is empty");
-    }
-
-    const audioBuffer=await new Promise((resolve,reject)=>{
-      ctx.decodeAudioData(arrayBuffer,resolve,reject);
-    });
-
-    if(recordedVoiceSource){
-      try{recordedVoiceSource.stop()}catch(_){}
-      try{recordedVoiceSource.disconnect()}catch(_){}
-      recordedVoiceSource=null;
-    }
-
-    const source=ctx.createBufferSource();
-    const gain=ctx.createGain();
-    const volume=Math.max(
-      0,
-      Math.min(
-        1,
-        Number(item?.voiceVolume??siteSettings.voice?.volume??.9)
-      )
-    );
-
-    source.buffer=audioBuffer;
-    gain.gain.value=volume;
-    source.connect(gain);
-    gain.connect(ctx.destination);
-    recordedVoiceSource=source;
-
-    source.onended=()=>{
-      if(recordedVoiceSource===source){
-        recordedVoiceSource=null;
-      }
-      try{source.disconnect()}catch(_){}
-      try{gain.disconnect()}catch(_){}
+  const finishOnce=(()=>{
+    let finished=false;
+    return ()=>{
+      if(finished)return;
+      finished=true;
       done();
     };
+  })();
 
-    source.start(0);
-    console.log(
-      "Original supporter voice started:",
-      key||"legacy-url",
-      "duration:",
-      audioBuffer.duration
-    );
+  try{
+    const ctx=ensureRecordedVoiceOutput();
+    if(ctx){
+      if(ctx.state==="suspended"){
+        try{await ctx.resume();}catch(e){
+          console.warn("AudioContext resume blocked:",e);
+        }
+      }
+
+      const response=await fetch(url,{cache:"no-store",credentials:"same-origin"});
+      const contentType=String(response.headers.get("content-type")||"");
+      const contentLength=String(response.headers.get("content-length")||"");
+      if(!response.ok){
+        throw new Error("Voice server returned HTTP "+response.status);
+      }
+
+      const arrayBuffer=await response.arrayBuffer();
+      if(!arrayBuffer.byteLength){
+        throw new Error("Voice recording is empty");
+      }
+
+      const audioBuffer=await new Promise((resolve,reject)=>{
+        ctx.decodeAudioData(arrayBuffer,resolve,reject);
+      });
+
+      if(recordedVoiceSource){
+        try{recordedVoiceSource.stop()}catch(_){}
+        try{recordedVoiceSource.disconnect()}catch(_){}
+        recordedVoiceSource=null;
+      }
+
+      const source=ctx.createBufferSource();
+      const gain=ctx.createGain();
+      const volume=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
+      source.buffer=audioBuffer;
+      gain.gain.value=volume;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      recordedVoiceSource=source;
+
+      source.onended=()=>{
+        if(recordedVoiceSource===source)recordedVoiceSource=null;
+        try{source.disconnect()}catch(_){}
+        try{gain.disconnect()}catch(_){}
+        finishOnce();
+      };
+
+      source.start(0);
+      console.log("Original supporter voice started",{
+        key:key||"legacy-url",
+        duration:audioBuffer.duration,
+        contextState:ctx.state,
+        contentType,
+        contentLength
+      });
+
+      // WebAudio start can be blocked by the host's autoplay policy. If the
+      // context is not actually running, use the media-element path below.
+      if(ctx.state==="running"){
+        return true;
+      }
+      try{source.stop();}catch(_){}
+    }
+  }catch(e){
+    console.error("Original supporter voice WebAudio playback failed:",e,url);
+  }
+
+  // Fallback: OBS/CEF can allow media-element autoplay even when WebAudio is
+  // suspended. This also gives us a second, independent playback path.
+  try{
+    const player=document.getElementById("recorded-voice-player");
+    if(!player)throw new Error("Fallback audio element is missing");
+    player.pause();
+    player.currentTime=0;
+    player.src=url;
+    player.volume=Math.max(0,Math.min(1,Number(item?.voiceVolume??siteSettings.voice?.volume??.9)));
+    player.onended=finishOnce;
+    player.onerror=()=>finishOnce();
+    player.load();
+    const p=player.play();
+    if(p&&typeof p.catch==="function"){
+      await p.catch(err=>{
+        console.error("Original supporter voice media playback blocked:",{
+          name:err?.name,
+          message:err?.message,
+          autoplayPolicy:(typeof navigator.getAutoplayPolicy==="function"
+            ? (()=>{try{return navigator.getAutoplayPolicy(player)}catch(_){return "unknown"}})()
+            : "unsupported")
+        });
+        throw err;
+      });
+    }
+    console.log("Original supporter voice media fallback started:",key||"legacy-url");
     return true;
   }catch(e){
-    console.error(
-      "Original supporter voice playback failed:",
-      e,
-      url
-    );
-    done();
+    console.error("Original supporter voice playback failed completely:",e,url);
+    finishOnce();
     return false;
   }
 }
-
 function playAlertSpeech(item,onDone){const msg=cleanSpeechText(item?.msg),done=typeof onDone==='function'?onDone:()=>{};speak(buildIntro(item),()=>{if(msg)speak(`Message: ${msg}`,done);else done()});}
-function showNormalAlert(item,key){if(!item||item.eventType==="engagement")return;const id=String(key||item.id||"");if(id&&displayedSuperChats.has(id))return;const ts=Number(item.timestamp||0);if(ts&&ts<overlayOpenedAt)return;if(id)displayedSuperChats.add(id);playAlertChime();triggerConfettiBurst();showNormalAlertCard(item)}
+async function showNormalAlert(item,key){
+  if(!item||item.eventType==="engagement")return;
+  const id=String(key||item.id||"");
+  if(id&&displayedSuperChats.has(id))return;
+  const ts=Number(item.timestamp||0);
+  if(ts&&ts<overlayOpenedAt)return;
+  if(id)displayedSuperChats.add(id);
+
+  playAlertChime();
+  triggerConfettiBurst();
+
+  await new Promise(resolve=>{
+    showNormalAlertCard(item);
+    const finish=()=>resolve();
+    if(String(item.voiceKey||item.voiceUrl||"").trim()){
+      playRecordedVoice(item,()=>playAlertSpeech(item,finish));
+    }else{
+      playAlertSpeech(item,finish);
+    }
+  });
+
+  // Remove only after playback has completed, preventing replay when the
+  // overlay has multiple instances or is refreshed.
+  if(key&&window.firebaseDB?.removeOverlayAlert){
+    try{await window.firebaseDB.removeOverlayAlert(key);}catch(e){
+      console.error("Failed to remove consumed overlay alert:",e);
+    }
+  }
+}
 function showNormalAlertCard(item){const card=document.getElementById("alert-card");if(!card)return;document.getElementById("alert-name").textContent=item.name||"A Supporter";document.getElementById("alert-amount").textContent=`₹${Number(item.amount||0).toLocaleString("en-IN")}`;document.getElementById("alert-message").textContent=item.msg||"";card.classList.add("active");const duration=Math.max(3,Math.min(30,Number(siteSettings.overlay?.duration||8)));setTimeout(()=>card.classList.remove("active"),duration*1000);if(String(item.voiceKey||item.voiceUrl||"").trim()){
   // Play the creator's original recording independently of browser TTS.
   // TTS starts after the recording finishes so the two audio streams never overlap.
@@ -139,5 +202,36 @@ function showNormalAlertCard(item){const card=document.getElementById("alert-car
 }else{
   playAlertSpeech(item);
 }}
-function startSuperChatListener(){if(!window.firebase||typeof firebase.database!=="function"||superChatListenerStarted)return;superChatListenerStarted=true;firebase.database().ref("overlayQueue").on("child_added",s=>showNormalAlert(s.val(),s.key))}function waitForOverlayFirebase(){if(window.firebaseDB&&typeof window.firebaseDB.listenOverlay==="function"){startSuperChatListener();return}setTimeout(waitForOverlayFirebase,300)}waitForOverlayFirebase();
+function startSuperChatListener(){
+  if(superChatListenerStarted||!window.firebaseDB?.listenOverlay)return;
+  superChatListenerStarted=true;
+  const clientId="overlay-"+Math.random().toString(36).slice(2)+"-"+Date.now();
+  window.firebaseDB.listenOverlay(async(item,key)=>{
+    if(!item||!key)return;
+    const ts=Number(item.timestamp||0);
+    const age=ts?Date.now()-ts:0;
+    // Never replay alerts from a previous overlay session. Clean them up so
+    // the queue does not grow forever.
+    if(ts && age>10*60*1000){
+      try{await window.firebaseDB.removeOverlayAlert(key);}catch(_){}
+      return;
+    }
+    try{
+      const claimed=await window.firebaseDB.claimOverlayAlert(key,clientId);
+      if(!claimed)return;
+      await showNormalAlert(item,key);
+    }catch(e){
+      console.error("Overlay alert handling failed:",e);
+      try{await window.firebaseDB.removeOverlayAlert(key);}catch(_){}
+    }
+  });
+}
+function waitForOverlayFirebase(){
+  if(window.firebaseDB&&typeof window.firebaseDB.listenOverlay==="function"){
+    startSuperChatListener();
+    return;
+  }
+  setTimeout(waitForOverlayFirebase,300);
+}
+waitForOverlayFirebase();
 </script></body></html>
